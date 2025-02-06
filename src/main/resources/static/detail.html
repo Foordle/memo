@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 상세보기</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="background-header"></div>
+<div class="background-body"></div>
+
+<div class="wrap">
+    <h2 id="post-title">제목</h2>
+    <p><strong>작성자:</strong> <span id="post-username"></span></p>
+    <p id="post-contents">내용</p>
+
+    <button class="back-btn" onclick="window.location.href='index.html'">목록으로 돌아가기</button>
+</div>
+
+<script>
+    $(document).ready(function () {
+        const postId = new URLSearchParams(window.location.search).get('id');
+        if (postId) {
+            $.ajax({
+                type: 'GET',
+                url: `/api/memos/${postId}`,
+                success: function (memo) {
+                    $('#post-title').text(memo.title);
+                    $('#post-username').text(memo.username);
+                    $('#post-contents').text(memo.contents);
+                },
+                error: function () {
+                    alert('게시글을 불러오는 중 오류가 발생했습니다.');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

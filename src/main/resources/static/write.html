@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성하기</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="background-header"></div>
+<div class="background-body"></div>
+
+<div class="wrap">
+    <h2>게시글 작성하기</h2>
+
+    <input type="text" class="field" placeholder="제목을 입력하세요" id="title">
+    <textarea class="field" placeholder="내용을 입력하세요" id="contents" rows="10"></textarea>
+
+    <img src="images/send.png" alt="작성하기" onclick="submitPost()">
+    <button class="back-btn" onclick="goBack()">취소하기</button>
+</div>
+
+<script>
+    function submitPost() {
+        const title = $('#title').val();
+        const contents = $('#contents').val();
+
+        if (!title || !contents) {
+            alert('제목과 내용을 모두 입력해주세요.');
+            return;
+        }
+
+        const data = { title, username: genRandomName(8), contents };
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/memos',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify(data),
+            success: function () {
+                alert('게시글이 성공적으로 작성되었습니다.');
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
+    function genRandomName(length) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    function goBack() {
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
+</html>
