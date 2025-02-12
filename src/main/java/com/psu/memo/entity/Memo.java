@@ -1,3 +1,4 @@
+// Memo.java
 package com.psu.memo.entity;
 
 import com.psu.memo.dto.MemoRequestDto;

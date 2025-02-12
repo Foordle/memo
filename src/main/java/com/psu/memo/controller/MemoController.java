@@ -1,63 +1,45 @@
+// MemoController.java
 package com.psu.memo.controller;
 
 import com.psu.memo.dto.MemoRequestDto;
 import com.psu.memo.dto.MemoResponseDto;
-import com.psu.memo.entity.Memo;
+import com.psu.memo.service.MemoService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/memos")
 public class MemoController {
 
-    private final Map<Long, Memo> memoList = new HashMap<>();
+    private final MemoService memoService;
 
-    @PostMapping("/memos")
+    public MemoController(MemoService memoService) {
+        this.memoService = memoService;
+    }
+
+    @PostMapping
     public MemoResponseDto createMemo(@RequestBody MemoRequestDto requestDto) {
-        Memo memo = new Memo(requestDto);
-        Long maxId = memoList.size() > 0 ? Collections.max(memoList.keySet()) + 1 : 1;
-        memo.setId(maxId);
-        memoList.put(memo.getId(), memo);
-        return new MemoResponseDto(memo);
+        return memoService.createMemo(requestDto);
     }
 
-    @GetMapping("/memos")
+    @GetMapping
     public List<MemoResponseDto> getMemos() {
-        return memoList.values().stream().map(MemoResponseDto::new).toList();
+        return memoService.getMemos();
     }
 
-    // 게시글 상세 조회
-    @GetMapping("/memos/{id}")
+    @GetMapping("/{id}")
     public MemoResponseDto getMemoById(@PathVariable Long id) {
-        Memo memo = memoList.get(id);
-        if (memo == null) {
-            throw new IllegalArgumentException("선택한 게시글이 존재하지 않습니다.");
-        }
-        return new MemoResponseDto(memo);
+        return memoService.getMemoById(id);
     }
 
-    @PutMapping("/memos/{id}")
+    @PutMapping("/{id}")
     public Long updateMemo(@PathVariable Long id, @RequestBody MemoRequestDto requestDto) {
-        if (memoList.containsKey(id)) {
-            Memo memo = memoList.get(id);
-            memo.update(requestDto);
-            return memo.getId();
-        } else {
-            throw new IllegalArgumentException("선택한 게시글이 존재하지 않습니다.");
-        }
+        return memoService.updateMemo(id, requestDto);
     }
 
-    @DeleteMapping("/memos/{id}")
+    @DeleteMapping("/{id}")
     public Long deleteMemo(@PathVariable Long id) {
-        if (memoList.containsKey(id)) {
-            memoList.remove(id);
-            return id;
-        } else {
-            throw new IllegalArgumentException("선택한 게시글이 존재하지 않습니다.");
-        }
+        return memoService.deleteMemo(id);
     }
 }
