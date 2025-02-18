@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>프로젝트 일정 상세보기</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+</head>
+<body>
+<h2>프로젝트 일정 상세보기</h2>
+
+<p><strong>프로젝트명:</strong> <span id="projectName"></span></p>
+<p><strong>작업명:</strong> <span id="taskName"></span></p>
+<p><strong>시작 날짜:</strong> <span id="startDate"></span></p>
+<p><strong>종료 날짜:</strong> <span id="endDate"></span></p>
+<p><strong>담당자:</strong> <span id="assignedTo"></span></p>
+<p><strong>의존 작업:</strong> <span id="dependency"></span></p>
+
+<button class="back-btn" onclick="goBack()">목록으로 돌아가기</button>
+<button class="delete-btn" onclick="deleteProject()">프로젝트 삭제</button>
+
+<h3>📅 프로젝트 일정</h3>
+<div id="calendar"></div>
+
+<script>
+    $(document).ready(function () {
+        const projectId = new URLSearchParams(window.location.search).get('id');
+
+        if (projectId) {
+            $.ajax({
+                type: 'GET',
+                url: `/api/projects/id/${projectId}`,  // 수정된 엔드포인트
+                success: function (project) {
+                    $('#projectName').text(project.projectName);
+                    $('#taskName').text(project.taskName);
+                    $('#startDate').text(project.startDate);
+                    $('#endDate').text(project.endDate);
+                    $('#assignedTo').text(project.assignedTo);
+                    $('#dependency').text(project.dependency || "없음");
+
+                    renderCalendar(project.startDate, project.endDate, project.projectName);
+                },
+                error: function () {
+                    alert('프로젝트 정보를 불러오는 중 오류가 발생했습니다.');
+                }
+            });
+        }
+    });
+
+
+    function goBack() {
+        window.location.href = 'index.html';
+    }
+
+    function deleteProject() {
+        const projectId = new URLSearchParams(window.location.search).get('id');
+
+        if (!confirm("이 프로젝트를 삭제하시겠습니까?")) {
+            return;
+        }
+
+        $.ajax({
+            type: 'DELETE',
+            url: `/api/projects/id/${projectId}`,  // 수정된 엔드포인트
+            success: function () {
+                alert('프로젝트가 삭제되었습니다.');
+                window.location.href = 'index.html';
+            },
+            error: function () {
+                alert('프로젝트 삭제 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
+
+    function renderCalendar(startDate, endDate, title) {
+        let calendarEl = document.getElementById('calendar');
+        let calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: [{
+                title: title,
+                start: startDate,
+                end: endDate,
+                color: '#3788d8'
+            }]
+        });
+
+        calendar.render();
+    }
+</script>
+</body>
+</html>

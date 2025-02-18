@@ -21,22 +21,29 @@
 
 <script>
     $(document).ready(function () {
-        const postId = new URLSearchParams(window.location.search).get('id');
-        if (postId) {
+        const projectId = new URLSearchParams(window.location.search).get('id');
+
+        if (projectId) {
             $.ajax({
                 type: 'GET',
-                url: `/api/memos/${postId}`,
-                success: function (memo) {
-                    $('#post-title').text(memo.title);
-                    $('#post-username').text(memo.username);
-                    $('#post-contents').text(memo.contents);
+                url: `/api/projects/id/${projectId}`,  // <-- 여기 수정
+                success: function (project) {
+                    $('#projectName').text(project.projectName);
+                    $('#taskName').text(project.taskName);
+                    $('#startDate').text(project.startDate);
+                    $('#endDate').text(project.endDate);
+                    $('#assignedTo').text(project.assignedTo);
+                    $('#dependency').text(project.dependency || "없음");
+
+                    renderCalendar(project.startDate, project.endDate, project.projectName);
                 },
                 error: function () {
-                    alert('게시글을 불러오는 중 오류가 발생했습니다.');
+                    alert('프로젝트 정보를 불러오는 중 오류가 발생했습니다.');
                 }
             });
         }
     });
+
 </script>
 </body>
 </html>

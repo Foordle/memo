@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>프로젝트 일정 추가</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h2>프로젝트 일정 추가</h2>
+
+<input type="text" class="field" placeholder="프로젝트 이름" id="projectName">
+<input type="text" class="field" placeholder="작업(Task) 이름" id="taskName">
+<input type="date" class="field" id="startDate">
+<input type="date" class="field" id="endDate">
+<input type="text" class="field" placeholder="담당자" id="assignedTo">
+<input type="text" class="field" placeholder="의존 작업 (선택 사항)" id="dependency">
+
+<button onclick="submitProject()">일정 추가</button>
+<button class="back-btn" onclick="goBack()">취소하기</button>
+
+<script>
+    function submitProject() {
+        const projectName = $('#projectName').val();
+        const taskName = $('#taskName').val();
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        const assignedTo = $('#assignedTo').val();
+        const dependency = $('#dependency').val();
+
+        if (!projectName || !taskName || !startDate || !endDate || !assignedTo) {
+            alert('모든 필수 항목을 입력해주세요.');
+            return;
+        }
+
+        const data = { projectName, taskName, startDate, endDate, assignedTo, dependency };
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/projects',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify(data),
+            success: function () {
+                alert('프로젝트 일정이 추가되었습니다.');
+                window.location.href = 'index.html';
+            },
+            error: function () {
+                alert('프로젝트 일정 추가 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
+
+    function goBack() {
+        window.location.href = 'project_schedule.html';
+    }
+</script>
+</body>
+</html>

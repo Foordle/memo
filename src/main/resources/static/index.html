@@ -2,26 +2,45 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게시글 목록</title>
+    <title>게시글 및 프로젝트 목록</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<h2>프로젝트 업무 스케줄 관리</h2>
 
-<button id="scheduleDetailBtn">스케줄 상세 보기</button>
+<div class="background-header"></div>
+<div class="background-body"></div>
 
-<div id="cards-box"></div>
+<div class="wrap">
+    <div class="header">
+        <h2>게시글 및 프로젝트 관리</h2>
+        <p>공유하고 싶은 소식과 프로젝트를 입력해주세요.</p>
+    </div>
+
+    <button id="writeBtn">게시글 작성하기</button>
+    <button id="project_writeBtn">프로젝트 일정 추가하기</button>
+
+    <h3>📌 게시글 목록</h3>
+    <div id="cards-box"></div>
+
+    <h3>📌 프로젝트 일정 목록</h3>
+    <div id="projects-box"></div>
+</div>
 
 <script>
     $(document).ready(function () {
-        $('#scheduleDetailBtn').click(function () {
-            window.location.href = 'project_schedule.html';
+        $('#writeBtn').click(function () {
+            window.location.href = 'write.html';
+        });
+
+        $('#project_writeBtn').click(function () {
+            window.location.href = 'project_write.html';
         });
 
         getMessages();
+        getProjects();
     });
 
+    // 기존 게시글 목록 가져오기
     function getMessages() {
         $('#cards-box').empty();
         $.ajax({
@@ -30,11 +49,39 @@
             success: function (response) {
                 response.forEach(memo => {
                     $('#cards-box').append(`
-                            <div class="card" onclick="window.location.href='detail.html?id=${memo.id}'">
-                                <h3>${memo.title}</h3>
-                            </div>
-                        `);
+                        <div class="card" onclick="window.location.href='detail.html?id=${memo.id}'">
+                            <h3>${memo.title}</h3>
+                        </div>
+                    `);
                 });
+            }
+        });
+    }
+
+    // 프로젝트 일정 목록 가져오기
+    function getProjects() {
+        $('#projects-box').empty();
+        $.ajax({
+            type: 'GET',
+            url: '/api/projects',
+            success: function (response) {
+                if (response.length === 0) {
+                    $('#projects-box').append('<p>등록된 프로젝트 일정이 없습니다.</p>');
+                    return;
+                }
+
+                response.forEach(project => {
+                    $('#projects-box').append(`
+                        <div class="card" onclick="window.location.href='project_detail.html?id=${project.id}'">
+                            <h3>${project.projectName} - ${project.taskName}</h3>
+                            <p><strong>시작:</strong> ${project.startDate} ~ <strong>종료:</strong> ${project.endDate}</p>
+                            <p><strong>담당자:</strong> ${project.assignedTo}</p>
+                        </div>
+                    `);
+                });
+            },
+            error: function () {
+                $('#projects-box').append('<p>프로젝트 데이터를 불러오는 중 오류가 발생했습니다.</p>');
             }
         });
     }
