@@ -6,25 +6,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<div class="background-header"></div>
-<div class="background-body"></div>
+<h2>프로젝트 업무 스케줄 관리</h2>
 
-<div class="wrap">
-    <div class="header">
-        <h2>Memo</h2>
-        <p>공유하고 싶은 소식을 입력해주세요.</p>
-    </div>
+<button id="scheduleDetailBtn">스케줄 상세 보기</button>
 
-    <button id="writeBtn">게시글 작성하기</button>
-    <div id="cards-box"></div>
-</div>
+<div id="cards-box"></div>
 
 <script>
     $(document).ready(function () {
-        $('#writeBtn').click(function () {
-            window.location.href = 'write.html';
+        $('#scheduleDetailBtn').click(function () {
+            window.location.href = 'project_schedule.html';
         });
 
         getMessages();
@@ -38,10 +30,10 @@
             success: function (response) {
                 response.forEach(memo => {
                     $('#cards-box').append(`
-                        <div class="card" onclick="window.location.href='detail.html?id=${memo.id}'">
-                            <h3>${memo.title}</h3>
-                        </div>
-                    `);
+                            <div class="card" onclick="window.location.href='detail.html?id=${memo.id}'">
+                                <h3>${memo.title}</h3>
+                            </div>
+                        `);
                 });
             }
         });

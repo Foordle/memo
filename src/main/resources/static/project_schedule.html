@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>프로젝트 업무 스케줄</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h2>프로젝트 업무 스케줄 관리</h2>
+
+<div id="calendar"></div>
+
+<script>
+  $(document).ready(function () {
+    $.ajax({
+      type: 'GET',
+      url: '/api/projects/ProjectA',
+      success: function (projects) {
+        projects.forEach(project => {
+          const start = new Date(project.startDate);
+          const end = new Date(project.endDate);
+          const dDay = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
+
+          $('#calendar').append(`
+                            <div class="task-bar" style="width:${(end - start) / (1000 * 60 * 60 * 24) * 30}px">
+                                <span>${project.taskName}</span> - <strong>D-${dDay}</strong>
+                            </div>
+                        `);
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>
