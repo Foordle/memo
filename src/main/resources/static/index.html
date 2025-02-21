@@ -43,6 +43,14 @@
 </div>
 
 <script>
+    // URL 파라미터 확인 후 로그인 성공 시 알림창 표시
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+        alert('로그인 성공!');
+    }
+
+
+
     $(document).ready(function () {
         $('#writeBtn').click(function () {
             window.location.href = 'write.html';
