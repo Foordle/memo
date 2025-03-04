@@ -22,12 +22,13 @@
         <input type="password" id="password" name="password" required>
     </div>
 
-    <button type="submit">로그인</button>
+    <button type="submit" id="loginBtn">로그인</button>
 </form>
 </div>
 
 <div class = "wrap">
-<a href="/register.html">회원가입</a>
+    <a href="/register.html">회원가입</a>
+    <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
 </div>
 
 <div class="wrap">
@@ -36,8 +37,8 @@
         <p>공유하고 싶은 소식과 프로젝트를 입력해주세요.</p>
     </div>
 
-    <button id="writeBtn">게시글 작성하기</button>
-    <button id="project_writeBtn">프로젝트 일정 추가하기</button>
+    <button id="writeBtn" style="display: none;">게시글 작성하기</button>
+    <button id="project_writeBtn" style="display: none;">프로젝트 일정 추가하기</button>
 
     <h3>📌 게시글 목록</h3>
     <div id="cards-box"></div>
@@ -54,8 +55,25 @@
     }
 
 
-
     $(document).ready(function () {
+        // 세션 확인 AJAX 요청
+        $.ajax({
+            type: 'GET',
+            url: '/check-login',
+            success: function (isLoggedIn) {
+                if (isLoggedIn) {
+                    // 로그인 상태: 글 작성/프로젝트 추가 버튼 활성화
+                    $('#writeBtn').show();
+                    $('#project_writeBtn').show();
+                    $('#logoutBtn').show();
+                } else {
+                    // 비로그인 상태: 로그인 버튼 활성화
+                    $('#loginBtn').show();
+                }
+            }
+        });
+
+
         $('#writeBtn').click(function () {
             window.location.href = 'write.html';
         });

@@ -2,6 +2,7 @@ package com.psu.memo.controller;
 
 import com.psu.memo.entity.User;
 import com.psu.memo.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,14 @@ public class LoginController {
     @PostMapping("/login")
     public String login(@RequestParam("username") String username,
                         @RequestParam("password") String password,
-                        Model model){
+                        Model model,
+                        HttpSession session){
 
         boolean isAuthenticated = userService.authenticate(username, password);
 
         if (isAuthenticated) {
             // 로그인 성공 시 메인 페이지로 이동
+            session.setAttribute("loggedin", username);
             return "redirect:/?success=true";
         } else {
             // 로그인 실패 시 에러 메시지와 함께 다시 로그인 페이지로 이동
@@ -34,6 +37,13 @@ public class LoginController {
         }
 
     }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();  // 세션 초기화
+        return "redirect:/";
+    }
+
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
@@ -44,5 +54,7 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패: " + e.getMessage());
         }
     }
+
+
 
 }
