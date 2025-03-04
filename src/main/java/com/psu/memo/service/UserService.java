@@ -2,6 +2,7 @@ package com.psu.memo.service;
 
 import com.psu.memo.entity.User;
 import com.psu.memo.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,11 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    @Transactional
+    public void save(User user) {
+        userRepository.save(user);
     }
 }
 

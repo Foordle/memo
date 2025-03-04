@@ -1,12 +1,13 @@
 package com.psu.memo.controller;
 
+import com.psu.memo.entity.User;
 import com.psu.memo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class LoginController {
@@ -32,6 +33,16 @@ public class LoginController {
             return "redirect:/?error=true";
         }
 
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody User user) {
+        try {
+            userService.save(user);
+            return ResponseEntity.ok("회원가입 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패: " + e.getMessage());
+        }
     }
 
 }
