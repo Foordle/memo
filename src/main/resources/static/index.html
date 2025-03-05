@@ -10,7 +10,7 @@
 <div class="background-header"></div>
 <div class="background-body"></div>
 
-<div class = "wrap" id = "auth-div">
+<div class = "wrap" id = "auth-div" style = "display:none;">
 <form action="/login" method="post">
     <div class="form-group">
         <label for="username">아이디:</label>
@@ -27,7 +27,7 @@
 </div>
 
 <div class = "wrap">
-    <a href="/register.html" id = "registerBtn">회원가입</a>
+    <a href="/register.html" id = "registerBtn" style="display: none;">회원가입</a>
     <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
 </div>
 
@@ -70,7 +70,8 @@
                     $('#writeBtn').show();
                     $('#project_writeBtn').show();
                     $('#logoutBtn').show();
-                    $('#auth-div').hide();
+                    //$('#auth-div').hide();
+                    //$('#registerBtn').hide();
                 } else {
                     // 비로그인 상태: 로그인 버튼 활성화
                     $('#auth-div').show();
