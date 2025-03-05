@@ -2,93 +2,171 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>프로젝트 일정 상세보기</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
+    <!-- ✅ jQuery 로드 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- ✅ FullCalendar 최신 버전 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.8/main.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.8/main.min.js"></script>
+
+    <style>
+        #calendar {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+        .d-day {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
 </head>
 <body>
-<h2>프로젝트 일정 상세보기</h2>
 
-<p><strong>프로젝트명:</strong> <span id="projectName"></span></p>
-<p><strong>작업명:</strong> <span id="taskName"></span></p>
-<p><strong>시작 날짜:</strong> <span id="startDate"></span></p>
-<p><strong>종료 날짜:</strong> <span id="endDate"></span></p>
-<p><strong>담당자:</strong> <span id="assignedTo"></span></p>
-<p><strong>의존 작업:</strong> <span id="dependency"></span></p>
+<h2>📌 프로젝트 일정 상세보기</h2>
+<div>
+    <label>프로젝트 이름:</label>
+    <span id="projectName"></span>
+</div>
+<div>
+    <label>📄 설명:</label>
+    <span id="projectDescription"></span>
+</div>
+<div>
+    <label>📅 시작 날짜:</label>
+    <span id="projectStart"></span>
+</div>
+<div>
+    <label>⏳ 종료 날짜:</label>
+    <span id="projectEnd"></span> <span class="d-day" id="dDay"></span>
+</div>
 
-<button class="back-btn" onclick="goBack()">목록으로 돌아가기</button>
-<button class="delete-btn" onclick="deleteProject()">프로젝트 삭제</button>
+<h3>📝 작업 목록</h3>
+<ul id="taskList"></ul>
 
-<h3>📅 프로젝트 일정</h3>
+<h3>📅 캘린더</h3>
 <div id="calendar"></div>
 
+<button class="delete-btn" onclick="deleteProject()">🗑 프로젝트 삭제</button>
+<button class="back-btn" onclick="goBack()">🔙 목록으로</button>
+
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
+        console.log("✅ jQuery 로드 완료");
+
         const projectId = new URLSearchParams(window.location.search).get('id');
 
-        if (projectId) {
-            $.ajax({
-                type: 'GET',
-                url: `/api/projects/id/${projectId}`,  // 수정된 엔드포인트
-                success: function (project) {
-                    $('#projectName').text(project.projectName);
-                    $('#taskName').text(project.taskName);
-                    $('#startDate').text(project.startDate);
-                    $('#endDate').text(project.endDate);
-                    $('#assignedTo').text(project.assignedTo);
-                    $('#dependency').text(project.dependency || "없음");
-
-                    renderCalendar(project.startDate, project.endDate, project.projectName);
-                },
-                error: function () {
-                    alert('프로젝트 정보를 불러오는 중 오류가 발생했습니다.');
-                }
-            });
-        }
-    });
-
-
-    function goBack() {
-        window.location.href = 'index.html';
-    }
-
-    function deleteProject() {
-        const projectId = new URLSearchParams(window.location.search).get('id');
-
-        if (!confirm("이 프로젝트를 삭제하시겠습니까?")) {
+        if (!projectId) {
+            alert("잘못된 접근입니다.");
+            window.location.href = 'index.html';
             return;
         }
 
         $.ajax({
-            type: 'DELETE',
-            url: `/api/projects/id/${projectId}`,  // 수정된 엔드포인트
-            success: function () {
-                alert('프로젝트가 삭제되었습니다.');
-                window.location.href = 'index.html';
+            type: 'GET',
+            url: `/api/projects/${projectId}`,
+            contentType: 'application/json; charset=UTF-8',
+            success: function (data) {
+                console.log("✅ 프로젝트 데이터 수신:", data);
+
+                $('#projectName').text(data.projectName);
+                $('#projectDescription').text(data.description);
+                $('#projectStart').text(data.startDate);
+                $('#projectEnd').text(data.endDate);
+
+                // ✅ D-Day 계산
+                displayDday(data.endDate);
+
+                // ✅ 기존 목록 비우기 (중복 추가 방지)
+                $('#taskList').empty();
+
+                // ✅ 작업 목록 추가 (이전 작업이 삭제되지 않도록 append 사용)
+                if (data.tasks && data.tasks.length > 0) {
+                    data.tasks.forEach(task => {
+                        $('#taskList').append(
+                            `<li>${task.taskName} (담당자: ${task.assignedTo}, ${task.startDate} ~ ${task.endDate})</li>`
+                        );
+                    });
+                } else {
+                    $('#taskList').append('<li>등록된 작업이 없습니다.</li>');
+                }
+
+                // ✅ 캘린더 업데이트
+                if (typeof FullCalendar !== "undefined") {
+                    renderCalendar(data.tasks || []);
+                } else {
+                    console.error("🚨 FullCalendar가 정의되지 않았음");
+                }
             },
-            error: function () {
-                alert('프로젝트 삭제 중 오류가 발생했습니다.');
+            error: function (xhr) {
+                alert('❌ 프로젝트 정보를 불러오는 중 오류가 발생했습니다.');
+                console.error("🚨 AJAX 오류:", xhr.responseText);
             }
         });
+    });
+
+    function deleteProject() {
+        const projectId = new URLSearchParams(window.location.search).get('id');
+
+        if (confirm("정말로 이 프로젝트를 삭제하시겠습니까?")) {
+            $.ajax({
+                type: 'DELETE',
+                url: `/api/projects/${projectId}`,
+                success: function () {
+                    alert('✅ 프로젝트가 삭제되었습니다.');
+                    window.location.href = 'index.html';
+                },
+                error: function () {
+                    alert('❌ 프로젝트 삭제 중 오류가 발생했습니다.');
+                }
+            });
+        }
     }
 
+    function renderCalendar(tasks) {
+        console.log("📅 캘린더에 추가할 tasks:", tasks);
 
-    function renderCalendar(startDate, endDate, title) {
-        let calendarEl = document.getElementById('calendar');
-        let calendar = new FullCalendar.Calendar(calendarEl, {
+        if (!Array.isArray(tasks) || tasks.length === 0) {
+            console.warn("⚠ 캘린더에 추가할 작업이 없습니다.");
+            return;
+        }
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            events: [{
-                title: title,
-                start: startDate,
-                end: endDate,
+            locale: 'ko',
+            events: tasks.map(task => ({
+                title: task.taskName,
+                start: task.startDate,
+                end: task.endDate,
                 color: '#3788d8'
-            }]
+            }))
         });
 
         calendar.render();
     }
+
+    function displayDday(endDate) {
+        let today = new Date();
+        let end = new Date(endDate);
+        let diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+
+        if (diff > 0) {
+            $('#dDay').text(` (D-${diff})`);
+        } else if (diff === 0) {
+            $('#dDay').text(` (D-Day)`);
+        } else {
+            $('#dDay').text(` (D+${Math.abs(diff)})`);
+        }
+    }
+
+    function goBack() {
+        window.location.href = 'index.html';
+    }
 </script>
+
 </body>
 </html>

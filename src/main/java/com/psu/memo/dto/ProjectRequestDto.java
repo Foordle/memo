@@ -1,17 +1,19 @@
 package com.psu.memo.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
-@NoArgsConstructor
+@Setter
 public class ProjectRequestDto {
     private String projectName;
-    private String taskName;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String assignedTo;
-    private String dependency;
+    private String description;
+
+
+    private List<TaskRequestDto> tasks;
 }

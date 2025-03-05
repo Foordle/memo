@@ -1,37 +1,60 @@
 package com.psu.memo.service;
 
 import com.psu.memo.dto.ProjectRequestDto;
+import com.psu.memo.dto.TaskRequestDto;
 import com.psu.memo.entity.Project;
+import com.psu.memo.entity.Task;
 import com.psu.memo.repository.ProjectRepository;
+import com.psu.memo.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService {
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
-    public ProjectService(ProjectRepository projectRepository) {
+    public ProjectService(ProjectRepository projectRepository, TaskRepository taskRepository) {
         this.projectRepository = projectRepository;
-    }
-
-    public Project saveProject(ProjectRequestDto requestDto) {
-        Project project = new Project();
-        project.setProjectName(requestDto.getProjectName());
-        project.setTaskName(requestDto.getTaskName());
-        project.setStartDate(requestDto.getStartDate());
-        project.setEndDate(requestDto.getEndDate());
-        project.setAssignedTo(requestDto.getAssignedTo());
-        project.setDependency(requestDto.getDependency());
-        return projectRepository.save(project);
-    }
-
-    public List<Project> getProjectsByProjectName(String projectName) {
-        return projectRepository.findByProjectName(projectName);
+        this.taskRepository = taskRepository;
     }
 
     public List<Project> getAllProjects() {
         return projectRepository.findAll();
+    }
+
+    public List<Project> getProjectsByProjectName(String projectName) {
+        return projectRepository.findByProjectNameContaining(projectName);
+    }
+
+    @Transactional
+    public Project saveProject(ProjectRequestDto requestDto) {
+        Project project = new Project();
+        project.setProjectName(requestDto.getProjectName());
+        project.setStartDate(requestDto.getStartDate());
+        project.setEndDate(requestDto.getEndDate());
+        project.setDescription(requestDto.getDescription());
+
+        Project savedProject = projectRepository.save(project);
+
+        if (requestDto.getTasks() != null && !requestDto.getTasks().isEmpty()) {
+            List<Task> tasks = requestDto.getTasks().stream().map(taskDto -> {
+                Task task = new Task();
+                task.setTaskName(taskDto.getTaskName());
+                task.setStartDate(taskDto.getStartDate());
+                task.setEndDate(taskDto.getEndDate());
+                task.setAssignedTo(taskDto.getAssignedTo());
+                task.setProject(savedProject);
+                return task;
+            }).collect(Collectors.toList());
+
+            taskRepository.saveAll(tasks);
+        }
+        return savedProject;
     }
 
     public Project getProjectById(Long id) {
@@ -39,13 +62,16 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 프로젝트가 존재하지 않습니다. ID: " + id));
     }
 
+    public List<Task> getTasksByProjectId(Long projectId) {
+        return taskRepository.findByProjectId(projectId);
+    }
 
+    @Transactional
     public void deleteProject(Long id) {
         if (!projectRepository.existsById(id)) {
             throw new IllegalArgumentException("해당 프로젝트가 존재하지 않습니다. ID: " + id);
         }
+        taskRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
     }
-
-
 }
