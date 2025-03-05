@@ -4,6 +4,7 @@ package com.psu.memo.controller;
 import com.psu.memo.dto.MemoRequestDto;
 import com.psu.memo.dto.MemoResponseDto;
 import com.psu.memo.service.MemoService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
