@@ -27,7 +27,7 @@
 </div>
 
 <div class = "wrap">
-    <a href="/register.html">회원가입</a>
+    <a href="/register.html" id = "registerBtn">회원가입</a>
     <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
 </div>
 
@@ -54,6 +54,10 @@
         alert('로그인 성공!');
     }
 
+    if (urlParams.get('error') === 'true') {
+        alert('로그인 실패');
+    }
+
 
     $(document).ready(function () {
         // 세션 확인 AJAX 요청
@@ -70,6 +74,7 @@
                 } else {
                     // 비로그인 상태: 로그인 버튼 활성화
                     $('#auth-div').show();
+                    $('#registerBtn').show();
                 }
             }
         });
