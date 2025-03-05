@@ -10,7 +10,7 @@
 <div class="background-header"></div>
 <div class="background-body"></div>
 
-<div class = "wrap">
+<div class = "wrap" id = "auth-div">
 <form action="/login" method="post">
     <div class="form-group">
         <label for="username">아이디:</label>
@@ -66,9 +66,10 @@
                     $('#writeBtn').show();
                     $('#project_writeBtn').show();
                     $('#logoutBtn').show();
+                    $('#auth-div').hide();
                 } else {
                     // 비로그인 상태: 로그인 버튼 활성화
-                    $('#loginBtn').show();
+                    $('#auth-div').show();
                 }
             }
         });
