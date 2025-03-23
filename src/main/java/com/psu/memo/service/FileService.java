@@ -24,8 +24,10 @@ public class FileService {
     private final FileRepository fileRepository;
 
     //properties 가서 바꿔야 되는데 아직 파일 저장 어디에 할지 확정이 안나서 일단 보류
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+//    @Value("${file.upload-dir}")
+//    private String uploadDir;
+
+    String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/tempFileDirectory";
 
 //    @Value("${file.download-dir}")
 //    private String downloadDir;
