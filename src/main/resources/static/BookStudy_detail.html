@@ -1,0 +1,68 @@
+<!-- BookStudy_detail.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>책 공부 게시글 상세보기</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="background-header"></div>
+<div class="background-body"></div>
+
+<div class="wrap">
+  <h2 id="post-title">책 공부 게시글</h2>
+  <p><strong>페이지 번호:</strong> <span id="post-pageNumber"></span></p>
+  <p><strong>내용:</strong></p>
+  <p id="post-contents"></p>
+  <div>
+    <strong>이미지:</strong><br>
+    <img id="post-image" src="" alt="Book Study Image" style="max-width: 100%; height: auto;">
+  </div>
+
+  <button id="deleteBtn">삭제하기</button>
+  <button class="back-btn" onclick="window.location.href='index.html'">목록으로 돌아가기</button>
+</div>
+
+<script>
+  $(document).ready(function () {
+    const postId = new URLSearchParams(window.location.search).get('id');
+
+    if (postId) {
+      $.ajax({
+        type: 'GET',
+        url: `/api/bookstudy/${postId}`,  // 새로 추가된 API 경로
+        success: function (post) {
+          $('#post-pageNumber').text(post.pageNumber);
+          $('#post-contents').text(post.contents);
+          $('#post-image').attr('src', post.imagePath);
+        },
+        error: function () {
+          alert('책 공부 게시글 정보를 불러오는 중 오류가 발생했습니다.');
+        }
+      });
+    }
+  });
+
+  $('#deleteBtn').click(function () {
+    const postId = new URLSearchParams(window.location.search).get('id');
+
+    if (postId && confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      $.ajax({
+        type: 'DELETE',
+        url: `/api/bookstudy/${postId}`,
+        success: function () {
+          alert('게시글이 삭제되었습니다.');
+          window.location.href = 'index.html';
+        },
+        error: function () {
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

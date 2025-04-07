@@ -17,8 +17,10 @@ public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "project_name", nullable = false)
+    private String projectName = "";
 
-    private String projectName;
+    @Column(name = "startDate", nullable = false, columnDefinition = "DATE DEFAULT CURDATE()")
     private LocalDate startDate;
     private LocalDate endDate;
     private String description;

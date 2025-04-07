@@ -34,21 +34,22 @@ public class ProjectController {
     }
 
     // 특정 프로젝트 조회 API
-    @RequestMapping("/api/projects/{id}/tasks")
-    public List<ProjectResponseDto> getProjectTasks(@PathVariable String projectName) {
+    @GetMapping("/{projectName}/tasks")
+    public List<ProjectResponseDto> getProjectTasks(@PathVariable("projectName") String projectName) {
         return projectService.getProjectsByProjectName(projectName).stream()
                 .map(ProjectResponseDto::new)
                 .collect(Collectors.toList());
     }
 
+
     @GetMapping("/{id}")
-    public ProjectResponseDto getProjectById(@PathVariable Long id) {
+    public ProjectResponseDto getProjectById(@PathVariable("id") Long id) {  // 수정 필요
         Project project = projectService.getProjectById(id);
         return new ProjectResponseDto(project);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProject(@PathVariable Long id) {
+    public void deleteProject(@PathVariable("id") Long id) {  // 수정 필요
         projectService.deleteProject(id);
     }
 
