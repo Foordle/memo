@@ -38,6 +38,9 @@
     </div>
 
     <button id="writeBtn" style="display: none;">게시글 작성하기</button>
+
+    <button id = "fileBtn">파일 업로드</button>
+
     <button id="project_writeBtn" style="display: none;">프로젝트 일정 추가하기</button>
     <button id="bookStudy_writeBtn" style="display: none;">책 공부 게시글 작성하기</button>
 
@@ -139,6 +142,16 @@
         getMessages();
         getProjects();
     });
+
+
+    $(document).ready(function () {
+        $('#fileBtn').click(function () {
+            window.location.href = 'file.html';
+        })
+
+    });
+
+
 
     // 기존 게시글 목록 가져오기
     function getMessages() {

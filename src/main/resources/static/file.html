@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>파일 업로드</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+    <h2>파일 업로드</h2>
+    <input type="file" id="fileInput">
+    <button id="uploadBtn">업로드</button>
+    <button onclick="window.location.href='index.html'">돌아가기</button>
+
+    <h3>업로드된 파일 목록</h3>
+    <div id="file-list"></div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        loadFiles(); // file list
+
+        $("#uploadBtn").click(function () {
+            let file = $("#fileInput")[0].files[0]; // 선택한 파일 가져오기
+            if (!file) {
+                alert("파일을 선택해주세요");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", file);
+
+
+            console.log([...formData]);
+
+
+            $.ajax({
+                type: "POST",
+                url: "/api/files/upload",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    alert("파일 업로드 성공");
+                    loadFiles(); // 업로드 후 목록 새로고침
+                },
+                error: function (xhr, status, error) {
+                    console.error("업로드 실패:", xhr.responseText);
+                    alert("업로드 실패");
+                }
+            });
+        });
+    });
+
+    function loadFiles() {
+        $("#file-list").empty();
+        $.ajax({
+            type: "GET",
+            url: "/api/files",
+            success: function (response) {
+
+                console.log(JSON.stringify(response, null, 2));
+
+                response.forEach(file => {
+                    $("#file-list").append(`
+                            <div>
+                                <a href="http://localhost:8080/api/files/download/${file.id}">${file.originalFileName}</a>
+                            </div>
+                        `);
+                });
+            },
+            error: function () {
+                $("#file-list").append("<p>파일 목록을 불러올 수 없습니다.</p>");
+            }
+        });
+    }
+
+    function downloadFile(fileId) {
+        if (!fileId) {
+            alert("파일 id가 없습니다.");
+            return;
+
+        }
+        window.location.href = `/files/${fileId}`;
+    }
+</script>
+</body>
+</html>
