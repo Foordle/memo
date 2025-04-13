@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Compiler</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    textarea {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 20px;
+        font-family: monospace;
+    }
+    select, button {
+        padding: 10px;
+        margin-right: 10px;
+    }
+    #output {
+        margin-top: 20px;
+        white-space: pre-wrap;
+        background-color: #f4f4f4;
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+<h1>온라인 컴파일러</h1>
+<p>코드 작성:</p>
+
+<!-- Code Input -->
+<textarea id="code" placeholder="Write your code here..."></textarea>
+
+<!-- Language Selection -->
+<select id="language">
+  <option value="c">C</option>
+  <option value="cpp">C++</option>
+  <option value="java">Java</option>
+  <option value="python">Python</option>
+</select>
+
+<!-- Submit Button -->
+<button onclick="compileCode()">Compile</button>
+
+<!-- Output Section -->
+<div id="output"></div>
+
+<script>
+  async function compileCode() {
+      const code = document.getElementById('code').value;
+      const language = document.getElementById('language').value;
+
+      if (!code) {
+          alert("Please enter some code to compile.");
+          return;
+      }
+
+      // Send the code and language to the server
+      const response = await fetch('/compile', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ code, language })
+      });
+
+      if (response.ok) {
+          const result = await response.json();
+          document.getElementById('output').textContent = result.output || "No output.";
+      } else {
+          document.getElementById('output').textContent = "Error compiling code.";
+      }
+  }
+</script>
+</body>
+</html>

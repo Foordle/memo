@@ -31,6 +31,8 @@
     <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
 </div>
 
+
+
 <div class="wrap">
     <div class="header">
         <h2>게시글 및 프로젝트 관리</h2>
@@ -42,6 +44,8 @@
     <button id = "fileBtn">파일 업로드</button>
 
     <button id="project_writeBtn" style="display: none;">프로젝트 일정 추가하기</button>
+
+    <button id="compilerBtn" style="display: none;">컴파일러</button>
 
     <h3>📌 게시글 목록</h3>
     <div id="cards-box"></div>
@@ -73,6 +77,7 @@
                     $('#writeBtn').show();
                     $('#project_writeBtn').show();
                     $('#logoutBtn').show();
+                    $('#compilerBtn').show();
                     //$('#auth-div').hide();
                     //$('#registerBtn').hide();
                 } else {
@@ -90,6 +95,10 @@
 
         $('#project_writeBtn').click(function () {
             window.location.href = 'project_write.html';
+        });
+
+        $('#compilerBtn').click(function () {
+            window.location.href = 'compiler.html';
         });
 
         getMessages();

@@ -3,14 +3,22 @@ package com.psu.memo.controller;
 import com.psu.memo.service.FileMaker;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
+@RequestMapping("/compile")
 public class CompilerController {
-    @PostMapping("/upload")
-    public String upload(){
+    @PostMapping("/create-file")
+    public void upload(){
         FileMaker fileMaker = new FileMaker();
         fileMaker.generateAndSaveFile();
-        return "";
-
+        return;
     }
+
+
+
+
+
+
 }
