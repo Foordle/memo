@@ -1,6 +1,8 @@
 package com.psu.memo.controller;
 
+import com.psu.memo.service.CompilerService;
 import com.psu.memo.service.FileMaker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,19 +18,17 @@ import java.util.Map;
 @RestController
 @RequestMapping("/compile")
 public class CompilerController {
-    @PostMapping("/create-file")
-    public void upload() {
-        FileMaker fileMaker = new FileMaker();
-        fileMaker.generateAndSaveFile();
-        return;
-    }
 
+    @Autowired
+    private CompilerService compilerService;
+
+    @PostMapping("/save")
     public ResponseEntity<Map<String, String>> compileCode(
             @RequestBody Map<String, String> request
     ) {
         try {
             String code = request.get("code");
-            String lang = request.get("lang");
+            String lang = request.get("language");
 
             Map<String, String> response = compilerService.compileCode(code, lang); //Service code 구현
 
