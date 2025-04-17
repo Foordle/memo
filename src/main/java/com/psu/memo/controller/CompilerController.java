@@ -1,18 +1,13 @@
 package com.psu.memo.controller;
 
 import com.psu.memo.service.CompilerService;
-import com.psu.memo.service.FileMaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Map;
 
 @RestController
@@ -30,7 +25,7 @@ public class CompilerController {
             String code = request.get("code");
             String lang = request.get("language");
 
-            Map<String, String> response = compilerService.compileCode(code, lang); //Service code 구현
+            Map<String, String> response = compilerService.compileCode(code, lang);
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
