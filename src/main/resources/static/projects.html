@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>프로젝트 일정 목록</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+    <h2>📅 프로젝트 일정 목록</h2>
+    <div id="projects-box"></div>
+    <button onclick="window.location.href='index.html'">돌아가기</button>
+</div>
+
+<script>
+    $(document).ready(function () {
+        getProjects();
+    });
+
+    function getProjects() {
+        $('#projects-box').empty();
+        $.ajax({
+            type: 'GET',
+            url: '/api/projects',
+            success: function (response) {
+                if (response.length === 0) {
+                    $('#projects-box').append('<p>등록된 프로젝트 일정이 없습니다.</p>');
+                    return;
+                }
+
+                response.forEach(project => {
+                    $('#projects-box').append(`
+                        <div class="card" onclick="window.location.href='project_detail.html?id=${project.id}'">
+                            <h3>${project.projectName} - ${project.taskName}</h3>
+                            <p><strong>시작:</strong> ${project.startDate} ~ <strong>종료:</strong> ${project.endDate}</p>
+                            <p><strong>담당자:</strong> ${project.assignedTo}</p>
+                        </div>
+                    `);
+                });
+            },
+            error: function () {
+                $('#projects-box').append('<p>프로젝트 데이터를 불러오는 중 오류가 발생했습니다.</p>');
+            }
+        });
+    }
+</script>
+</body>
+</html>
