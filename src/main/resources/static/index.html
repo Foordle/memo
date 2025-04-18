@@ -43,11 +43,15 @@
 
     <button id="project_writeBtn" style="display: none;">프로젝트 일정 추가하기</button>
 
+    <button onclick="window.location.href='posts.html'">📄 게시글 목록 보기</button>
+    <button onclick="window.location.href='projects.html'">📅 프로젝트 일정 보기</button>
+    
     <h3>📌 게시글 목록</h3>
     <div id="cards-box"></div>
 
     <h3>📌 프로젝트 일정 목록</h3>
     <div id="projects-box"></div>
+    
 </div>
 
 <script>
@@ -60,7 +64,6 @@
     if (urlParams.get('error') === 'true') {
         alert('로그인 실패');
     }
-
 
     $(document).ready(function () {
         // 세션 확인 AJAX 요청
