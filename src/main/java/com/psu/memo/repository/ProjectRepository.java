@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, Long> {  // 수정됨
-    List<Project> findByProjectName(String projectName);
+public interface ProjectRepository extends JpaRepository<Project, Long> {
+    List<Project> findByProjectNameContaining(String projectName);  // ✅ 메서드 추가
 }

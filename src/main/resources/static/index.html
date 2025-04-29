@@ -42,12 +42,54 @@
     <button id = "fileBtn">파일 업로드</button>
 
     <button id="project_writeBtn" style="display: none;">프로젝트 일정 추가하기</button>
+    <button id="bookStudy_writeBtn" style="display: none;">책 공부 게시글 작성하기</button>
+
 
     <h3>📌 게시글 목록</h3>
     <div id="cards-box"></div>
 
     <h3>📌 프로젝트 일정 목록</h3>
     <div id="projects-box"></div>
+
+    <!-- Book Study 글 목록 추가 -->
+    <h3>📌 책 공부 게시글 목록</h3>
+    <div id="bookstudy-box"></div>
+
+    <script>
+        $(document).ready(function () {
+            getBookStudyPosts();
+        });
+
+        // 책 공부 게시글 목록 가져오기
+        // 책 공부 게시글 목록 가져오기
+        function getBookStudyPosts() {
+            $('#bookstudy-box').empty();
+            $.ajax({
+                type: 'GET',
+                url: '/api/bookstudy',  // 새로운 책 공부 게시글 API 경로
+                success: function (response) {
+                    if (response.length === 0) {
+                        $('#bookstudy-box').append('<p>등록된 책 공부 게시글이 없습니다.</p>');
+                        return;
+                    }
+
+                    response.forEach(post => {
+                        $('#bookstudy-box').append(`
+                <div class="card" onclick="window.location.href='BookStudy_detail.html?id=${post.id}'">
+                    <h3>페이지 번호: ${post.pageNumber}</h3>
+                    <p>${post.contents.substring(0, 100)}...</p>
+                </div>
+            `);
+                    });
+                },
+                error: function () {
+                    $('#bookstudy-box').append('<p>책 공부 게시글 데이터를 불러오는 중 오류가 발생했습니다.</p>');
+                }
+            });
+        }
+
+    </script>
+
 </div>
 
 <script>
@@ -73,6 +115,7 @@
                     $('#writeBtn').show();
                     $('#project_writeBtn').show();
                     $('#logoutBtn').show();
+                    $('#bookStudy_writeBtn').show();
                     //$('#auth-div').hide();
                     //$('#registerBtn').hide();
                 } else {
@@ -90,6 +133,10 @@
 
         $('#project_writeBtn').click(function () {
             window.location.href = 'project_write.html';
+        });
+
+        $('#bookStudy_writeBtn').click(function () {
+            window.location.href = 'BookStudy_write.html';
         });
 
         getMessages();

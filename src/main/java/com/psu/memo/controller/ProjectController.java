@@ -33,24 +33,25 @@ public class ProjectController {
                 .collect(Collectors.toList());
     }
 
-    // 특정 프로젝트명으로 조회 API (작업 리스트)
-    @GetMapping("/name/{projectName}")
-    public List<ProjectResponseDto> getProjectTasks(@PathVariable String projectName) {
+    // 특정 프로젝트 조회 API
+    @GetMapping("/{projectName}/tasks")
+    public List<ProjectResponseDto> getProjectTasks(@PathVariable("projectName") String projectName) {
         return projectService.getProjectsByProjectName(projectName).stream()
                 .map(ProjectResponseDto::new)
                 .collect(Collectors.toList());
     }
 
-    // 특정 프로젝트 ID로 조회 API
-    @GetMapping("/id/{id}")
-    public ProjectResponseDto getProjectById(@PathVariable Long id) {
+
+    @GetMapping("/{id}")
+    public ProjectResponseDto getProjectById(@PathVariable("id") Long id) {  // 수정 필요
         Project project = projectService.getProjectById(id);
         return new ProjectResponseDto(project);
     }
 
-    // 프로젝트 삭제 API
-    @DeleteMapping("/id/{id}")
-    public void deleteProject(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    public void deleteProject(@PathVariable("id") Long id) {  // 수정 필요
         projectService.deleteProject(id);
     }
+
+
 }
