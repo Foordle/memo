@@ -74,4 +74,33 @@ public class ProjectService {
         taskRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
     }
+
+
+    @Transactional
+    public Project updateProject(Long id, ProjectRequestDto requestDto) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 프로젝트가 존재하지 않습니다. ID: " + id));
+
+        project.setProjectName(requestDto.getProjectName());
+        project.setStartDate(requestDto.getStartDate());
+        project.setEndDate(requestDto.getEndDate());
+        project.setDescription(requestDto.getDescription());
+
+        // 기존 Task 삭제 후 새로 설정 (간단한 방식)
+        taskRepository.deleteByProjectId(id);
+        if (requestDto.getTasks() != null && !requestDto.getTasks().isEmpty()) {
+            List<Task> tasks = requestDto.getTasks().stream().map(taskDto -> {
+                Task task = new Task();
+                task.setTaskName(taskDto.getTaskName());
+                task.setStartDate(taskDto.getStartDate());
+                task.setEndDate(taskDto.getEndDate());
+                task.setAssignedTo(taskDto.getAssignedTo());
+                task.setProject(project);
+                return task;
+            }).collect(Collectors.toList());
+            taskRepository.saveAll(tasks);
+        }
+
+        return project;
+    }
 }

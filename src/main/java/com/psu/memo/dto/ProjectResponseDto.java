@@ -15,6 +15,7 @@ public class ProjectResponseDto {
     private String description;
     private List<TaskResponseDto> tasks;
 
+
     public ProjectResponseDto(Project project) {
         this.id = project.getId();
         this.projectName = project.getProjectName();

@@ -33,6 +33,7 @@
 <div id="calendar"></div>
 
 <button class="delete-btn" onclick="deleteProject()">🗑 프로젝트 삭제</button>
+<button class="delete-btn" onclick="goToEditPage()">🗑 프로젝트 수정</button>
 <button class="back-btn" onclick="goBack()">🔙 목록으로</button>
 
 <script>
@@ -159,6 +160,12 @@
             });
         }
     }
+
+    function goToEditPage() {
+        const projectId = new URLSearchParams(window.location.search).get('id');
+        window.location.href = `project_write.html?id=${projectId}`;
+    }
+
 
     function goBack() {
         window.location.href = 'index.html';

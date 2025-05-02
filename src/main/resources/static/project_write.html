@@ -2,102 +2,129 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>프로젝트 생성</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <title>프로젝트 작성/수정</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .field { margin: 10px 0; width: 100%; padding: 5px; }
+        .task-group { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .remove-task { background-color: red; color: white; border: none; padding: 5px; margin-top: 5px; cursor: pointer; }
+    </style>
 </head>
-
 <body>
 <div class="wrap">
-    <h2>새 프로젝트 생성</h2>
+    <h2 id="pageTitle">📁 프로젝트 작성하기</h2>
 
-    <label for="projectName">프로젝트 이름:</label>
-    <input type="text" id="projectName" class="field"><br>
+    <label>프로젝트명:</label>
+    <input type="text" id="projectName" class="field">
 
-    <label for="startDate">시작일:</label>
-    <input type="date" id="startDate" class="field"><br>
+    <label>설명:</label>
+    <textarea id="description" class="field"></textarea>
 
-    <label for="endDate">종료일:</label>
-    <input type="date" id="endDate" class="field"><br>
+    <label>시작일:</label>
+    <input type="date" id="startDate" class="field">
 
-    <label for="description">설명:</label>
-    <textarea id="description" class="field"></textarea><br>
+    <label>종료일:</label>
+    <input type="date" id="endDate" class="field">
 
-    <h3>작업(Task) 목록</h3>
-    <div id="tasks-container"></div>
+    <h3>📝 작업(Task) 목록</h3>
+    <div id="taskContainer"></div>
     <button onclick="addTask()">작업 추가</button>
 
-    <button onclick="submitProject()">프로젝트 저장</button>
+    <br><br>
+    <button onclick="submitProject()">저장</button>
     <button onclick="goBack()">취소</button>
 </div>
 
 <script>
-    function addTask() {
-        $('#tasks-container').append(`
-            <div class="task">
-                <input type="text" class="field task-name" placeholder="작업(Task) 이름">
-                <input type="date" class="field task-start">
-                <input type="date" class="field task-end">
-                <input type="text" class="field task-assigned" placeholder="담당자">
-                <button onclick="removeTask(this)">삭제</button>
+    const projectId = new URLSearchParams(window.location.search).get('id');
+
+    $(document).ready(function () {
+        if (projectId) {
+            $('#pageTitle').text("✏ 프로젝트 수정하기");
+
+            $.ajax({
+                type: 'GET',
+                url: `/api/projects/${projectId}`,
+                success: function (data) {
+                    $('#projectName').val(data.projectName);
+                    $('#description').val(data.description);
+                    $('#startDate').val(data.startDate);
+                    $('#endDate').val(data.endDate);
+
+                    if (data.tasks) {
+                        data.tasks.forEach(task => {
+                            addTask(task);
+                        });
+                    }
+                },
+                error: function () {
+                    alert("❌ 프로젝트 정보를 불러오지 못했습니다.");
+                }
+            });
+        } else {
+            addTask(); // 빈 작업 필드 1개 추가
+        }
+    });
+
+    function addTask(task = {}) {
+        const taskId = new Date().getTime();  // 고유 id
+        $('#taskContainer').append(`
+            <div class="task-group" data-id="${taskId}">
+                <label>작업명:</label>
+                <input type="text" class="taskName field" value="${task.taskName || ''}">
+                <label>담당자:</label>
+                <input type="text" class="assignedTo field" value="${task.assignedTo || ''}">
+                <label>시작일:</label>
+                <input type="date" class="startDate field" value="${task.startDate || ''}">
+                <label>종료일:</label>
+                <input type="date" class="endDate field" value="${task.endDate || ''}">
+                <button class="remove-task" onclick="removeTask(${taskId})">❌ 삭제</button>
             </div>
         `);
     }
 
-    function removeTask(button) {
-        $(button).parent().remove();
+    function removeTask(id) {
+        $(`.task-group[data-id='${id}']`).remove();
     }
 
     function submitProject() {
-        const projectName = $('#projectName').val().trim();
-        const startDate = $('#startDate').val();
-        const endDate = $('#endDate').val();
-        const description = $('#description').val();
-        const tasks = [];
+        const data = {
+            projectName: $('#projectName').val().trim(),
+            description: $('#description').val().trim(),
+            startDate: $('#startDate').val(),
+            endDate: $('#endDate').val(),
+            tasks: []
+        };
 
-        $('.task').each(function () {
-            const taskName = $(this).find('.task-name').val();
-            const taskStart = $(this).find('.task-start').val();
-            const taskEnd = $(this).find('.task-end').val();
-            const assignedTo = $(this).find('.task-assigned').val();
-
-            if (taskName && taskStart && taskEnd && assignedTo) {
-                tasks.push({
-                    taskName: taskName,
-                    startDate: taskStart,
-                    endDate: taskEnd,
-                    assignedTo: assignedTo
-                });
-            }
+        $('.task-group').each(function () {
+            const task = {
+                taskName: $(this).find('.taskName').val(),
+                assignedTo: $(this).find('.assignedTo').val(),
+                startDate: $(this).find('.startDate').val(),
+                endDate: $(this).find('.endDate').val()
+            };
+            data.tasks.push(task);
         });
 
-        if (!projectName || !startDate || !endDate) {
-            alert('모든 필수 항목을 입력해주세요.');
+        if (!data.projectName || !data.startDate || !data.endDate) {
+            alert("프로젝트명, 시작일, 종료일을 모두 입력해주세요.");
             return;
         }
 
-        const projectData = {
-            projectName: projectName,
-            startDate: startDate,
-            endDate: endDate,
-            description: description,
-            tasks: tasks
-        };
-
-        console.log("📌 전송 데이터:", JSON.stringify(projectData));
+        const method = projectId ? 'PUT' : 'POST';
+        const url = projectId ? `/api/projects/${projectId}` : '/api/projects';
 
         $.ajax({
-            type: 'POST',
-            url: '/api/projects',
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify(projectData),
+            type: method,
+            url: url,
+            data: JSON.stringify(data),
+            contentType: 'application/json',
             success: function () {
-                alert('프로젝트가 저장되었습니다.');
+                alert('✅ 프로젝트가 저장되었습니다.');
                 window.location.href = 'index.html';
             },
-            error: function (xhr) {
-                console.error("🚨 AJAX 오류:", xhr.responseText);
-                alert('프로젝트 저장 중 오류가 발생했습니다.');
+            error: function () {
+                alert('❌ 저장 중 오류 발생');
             }
         });
     }
