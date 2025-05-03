@@ -1,7 +1,10 @@
 package com.psu.memo.dto;
 
-import com.psu.memo.entity.Task;  // ✅ 올바른 Task import
+import com.psu.memo.entity.Task;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public class TaskResponseDto {
@@ -10,12 +13,21 @@ public class TaskResponseDto {
     private String startDate;
     private String endDate;
     private String assignedTo;
+    private List<Long> predecessorIds = new ArrayList<>();
+    private List<Integer> gaps = new ArrayList<>();
 
-    public TaskResponseDto(Task task) {  // ✅ Task 객체를 받는 생성자 추가
+    public TaskResponseDto(Task task) {
         this.id = task.getId();
         this.taskName = task.getTaskName();
         this.startDate = task.getStartDate().toString();
         this.endDate = task.getEndDate().toString();
         this.assignedTo = task.getAssignedTo();
+
+        if (task.getDependencies() != null) {
+            for (var dep : task.getDependencies()) {
+                predecessorIds.add(dep.getPredecessor().getId());
+                gaps.add(dep.getGapDays());
+            }
+        }
     }
 }

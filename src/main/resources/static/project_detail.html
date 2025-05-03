@@ -69,7 +69,7 @@
                         $('#taskList').append(`
                             <li>
                                 ${task.taskName} (담당자: ${task.assignedTo}, ${task.startDate} ~ ${task.endDate})
-                                <button onclick="deleteTask(${task.id})" style="margin-left: 10px;">❌ 삭제</button>
+                                <button onclick="deleteTask(${task.id})" style="margin-left: 10px;">task완료!(구성원에게 알람 전송!)</button>
                             </li>
                         `);
                     });

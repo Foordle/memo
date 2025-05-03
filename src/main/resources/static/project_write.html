@@ -37,6 +37,8 @@
 
 <script>
     const projectId = new URLSearchParams(window.location.search).get('id');
+    let taskIndex = 0;
+    const tasksMeta = [];
 
     $(document).ready(function () {
         if (projectId) {
@@ -52,8 +54,8 @@
                     $('#endDate').val(data.endDate);
 
                     if (data.tasks) {
-                        data.tasks.forEach(task => {
-                            addTask(task);
+                        data.tasks.forEach((task, idx) => {
+                            addTask(task, idx);
                         });
                     }
                 },
@@ -62,25 +64,111 @@
                 }
             });
         } else {
-            addTask(); // 빈 작업 필드 1개 추가
+            addTask();
         }
     });
 
-    function addTask(task = {}) {
-        const taskId = new Date().getTime();  // 고유 id
+    function addTask(task = {}, forcedIndex = null) {
+        const taskId = forcedIndex !== null ? forcedIndex : taskIndex++;
+        const label = `#${taskId + 1}`;
+
+        const predecessorOptions = tasksMeta.map(t => {
+            return `
+                <label>
+                    <input type="checkbox" class="predecessor" data-id="${t.id}" onchange="updateGapInputs(${taskId})"> ${t.label}
+                </label>
+            `;
+        }).join('<br>');
+
         $('#taskContainer').append(`
             <div class="task-group" data-id="${taskId}">
+                <h4>${label}</h4>
                 <label>작업명:</label>
                 <input type="text" class="taskName field" value="${task.taskName || ''}">
                 <label>담당자:</label>
                 <input type="text" class="assignedTo field" value="${task.assignedTo || ''}">
                 <label>시작일:</label>
-                <input type="date" class="startDate field" value="${task.startDate || ''}">
+                <input type="date" class="startDate field" value="${task.startDate || ''}" onchange="validateStartDate(${taskId})">
                 <label>종료일:</label>
                 <input type="date" class="endDate field" value="${task.endDate || ''}">
+
+                <div class="predecessor-box">
+                    <p>선행 작업 선택 + gap 입력 (일)</p>
+                    ${predecessorOptions}
+                    <div class="gap-container" id="gapContainer-${taskId}"></div>
+                </div>
+
                 <button class="remove-task" onclick="removeTask(${taskId})">❌ 삭제</button>
             </div>
         `);
+
+        tasksMeta.push({ id: taskId, label: label, name: task.taskName || '' });
+
+        setTimeout(() => {
+            if (task.predecessorIds && task.gaps) {
+                // 체크박스 강제 체크
+                task.predecessorIds.forEach(preId => {
+                    $(`.task-group[data-id='${taskId}'] .predecessor[data-id='${preId}']`).prop('checked', true);
+                });
+
+                // gap input 박스 렌더링 후 값 설정
+                updateGapInputs(taskId);
+
+                for (let i = 0; i < task.predecessorIds.length; i++) {
+                    const preId = task.predecessorIds[i];
+                    const gapVal = task.gaps[i];
+                    $(`.task-group[data-id='${taskId}'] .gap[data-pre='${preId}']`).val(gapVal);
+                }
+            }
+        }, 0);
+
+    }
+
+    function updateGapInputs(currentId) {
+        const container = $(`#gapContainer-${currentId}`);
+        container.empty();
+
+        $(`.task-group[data-id="${currentId}"] .predecessor:checked`).each(function () {
+            const id = $(this).data('id');
+            container.append(`
+                <label>#${id + 1} 이후 gap(일):</label>
+                <input type="number" class="gap" data-pre="${id}" min="0" value="1"><br>
+            `);
+        });
+    }
+
+    function validateStartDate(taskId) {
+        const taskEl = $(`.task-group[data-id="${taskId}"]`);
+        const checkedPre = taskEl.find('.predecessor:checked');
+        let maxStart = null;
+
+        checkedPre.each(function () {
+            const preId = $(this).data('id');
+            const preTaskEl = $(`.task-group[data-id="${preId}"]`);
+            const preEnd = new Date(preTaskEl.find('.endDate').val());
+            const gap = parseInt(taskEl.find(`.gap[data-pre="${preId}"]`).val()) || 0;
+
+            let minDate = new Date(preEnd);
+            minDate.setDate(minDate.getDate() + gap);
+
+            if (!maxStart || minDate > maxStart) {
+                maxStart = minDate;
+            }
+        });
+
+        if (maxStart) {
+            const startInput = taskEl.find('.startDate')[0];
+            const endInput = taskEl.find('.endDate')[0];
+            const currentDuration = (new Date(endInput.value) - new Date(startInput.value)) / (1000 * 60 * 60 * 24);
+
+            startInput.min = maxStart.toISOString().split("T")[0];
+            if (new Date(startInput.value) < maxStart) {
+                startInput.value = startInput.min;
+                const newEnd = new Date(startInput.value);
+                newEnd.setDate(newEnd.getDate() + (isNaN(currentDuration) ? 1 : currentDuration));
+                endInput.value = newEnd.toISOString().split("T")[0];
+            }
+        }
     }
 
     function removeTask(id) {
@@ -97,13 +185,27 @@
         };
 
         $('.task-group').each(function () {
+            const id = parseInt($(this).data('id'));
             const task = {
                 taskName: $(this).find('.taskName').val(),
                 assignedTo: $(this).find('.assignedTo').val(),
                 startDate: $(this).find('.startDate').val(),
-                endDate: $(this).find('.endDate').val()
+                endDate: $(this).find('.endDate').val(),
+                predecessorIds: [],
+                gaps: []
             };
+
+            $(this).find('.predecessor:checked').each(function () {
+                const preId = parseInt($(this).data('id'));
+                const gap = parseInt($(this).closest('.task-group').find(`.gap[data-pre="${preId}"]`).val()) || 0;
+                task.predecessorIds.push(preId);
+                task.gaps.push(gap);
+            });
+
             data.tasks.push(task);
+
+            const meta = tasksMeta.find(t => t.id === id);
+            if (meta) meta.name = task.taskName;
         });
 
         if (!data.projectName || !data.startDate || !data.endDate) {
