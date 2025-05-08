@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -40,200 +41,175 @@
     let taskIndex = 0;
     const tasksMeta = [];
 
-    $(document).ready(function () {
+    $(document).ready(function() {
+        // 수정 모드일 때 기존 데이터 로드
         if (projectId) {
             $('#pageTitle').text("✏ 프로젝트 수정하기");
-
-            $.ajax({
-                type: 'GET',
-                url: `/api/projects/${projectId}`,
-                success: function (data) {
-                    $('#projectName').val(data.projectName);
-                    $('#description').val(data.description);
-                    $('#startDate').val(data.startDate);
-                    $('#endDate').val(data.endDate);
-
-                    if (data.tasks) {
-                        data.tasks.forEach((task, idx) => {
-                            addTask(task, idx);
-                        });
-                    }
-                },
-                error: function () {
-                    alert("❌ 프로젝트 정보를 불러오지 못했습니다.");
-                }
-            });
+            $.getJSON(`/api/projects/${projectId}`, data => {
+                $('#projectName').val(data.projectName);
+                $('#description').val(data.description);
+                $('#startDate').val(data.startDate);
+                $('#endDate').val(data.endDate);
+                // 기존 Task 렌더
+                data.tasks.forEach((t, idx) => addTask(t, idx));
+            }).fail(() => alert("❌ 프로젝트 정보를 불러오지 못했습니다."));
         } else {
             addTask();
         }
     });
 
-    function addTask(task = {}, forcedIndex = null) {
-        const taskId = forcedIndex !== null ? forcedIndex : taskIndex++;
-        const label = `#${taskId + 1}`;
+    // 부모 Task endDate 변경 시 자식 재계산
+    $(document).on('change', '.endDate', function() {
+        const changed = +$(this).closest('.task-group').data('id');
+        $('.task-group').each(function() {
+            const me = $(this), id = +me.data('id');
+            if (me.find(`.predecessor[data-id="${changed}"]`).is(':checked')) {
+                validateStartDate(id);
+            }
+        });
+    });
 
-        const predecessorOptions = tasksMeta.map(t => {
-            return `
-                <label>
-                    <input type="checkbox" class="predecessor" data-id="${t.id}" onchange="updateGapInputs(${taskId})"> ${t.label}
-                </label>
-            `;
-        }).join('<br>');
+    // 선행 checkbox 변경 시 gap input 다시 그리고 재계산
+    $(document).on('change', '.predecessor', function() {
+        const id = +$(this).closest('.task-group').data('id');
+        updateGapInputs(id);
+    });
+
+    function addTask(task = {}, forcedIndex = null) {
+        const id = forcedIndex != null ? forcedIndex : taskIndex++;
+        const label = `#${id+1}`;
+        // 이전에 만든 task 의 id,label 로 체크박스 옵션 구성
+        const options = tasksMeta.map(t =>
+            `<label>
+                <input type="checkbox" class="predecessor" data-id="${t.id}"> ${t.label}
+            </label>`
+        ).join('<br>');
 
         $('#taskContainer').append(`
-            <div class="task-group" data-id="${taskId}">
-                <h4>${label}</h4>
-                <label>작업명:</label>
-                <input type="text" class="taskName field" value="${task.taskName || ''}">
-                <label>담당자:</label>
-                <input type="text" class="assignedTo field" value="${task.assignedTo || ''}">
-                <label>시작일:</label>
-                <input type="date" class="startDate field" value="${task.startDate || ''}" onchange="validateStartDate(${taskId})">
-                <label>종료일:</label>
-                <input type="date" class="endDate field" value="${task.endDate || ''}">
-
-                <div class="predecessor-box">
-                    <p>선행 작업 선택 + gap 입력 (일)</p>
-                    ${predecessorOptions}
-                    <div class="gap-container" id="gapContainer-${taskId}"></div>
-                </div>
-
-                <button class="remove-task" onclick="removeTask(${taskId})">❌ 삭제</button>
+            <div class="task-group" data-id="${id}">
+              <h4>${label}</h4>
+              <label>작업명:</label>
+              <input type="text" class="taskName field" value="${task.taskName||''}">
+              <label>담당자:</label>
+              <input type="text" class="assignedTo field" value="${task.assignedTo||''}">
+              <label>시작일:</label>
+              <input type="date" class="startDate field" value="${task.startDate||''}">
+              <label>종료일:</label>
+              <input type="date" class="endDate field" value="${task.endDate||''}">
+              <div class="predecessor-box">
+                <p>선행 작업 선택 + gap 입력 (일)</p>
+                ${options}
+                <div class="gap-container" id="gapContainer-${id}"></div>
+              </div>
+              <button class="remove-task" onclick="removeTask(${id})">❌ 삭제</button>
             </div>
         `);
 
-        tasksMeta.push({ id: taskId, label: label, name: task.taskName || '' });
+        tasksMeta.push({id, label});
 
+        // 수정 모드: 기존 Predecessor & gap 채우기
         setTimeout(() => {
             if (task.predecessorIds && task.gaps) {
-                // 체크박스 강제 체크
-                task.predecessorIds.forEach(preId => {
-                    $(`.task-group[data-id='${taskId}'] .predecessor[data-id='${preId}']`).prop('checked', true);
+                const gapsMap = {};
+                task.predecessorIds.forEach((pre, i) => {
+                    gapsMap[pre] = task.gaps[i];
+                    $(`.task-group[data-id="${id}"] .predecessor[data-id="${pre}"]`).prop('checked', true);
                 });
-
-                // gap input 박스 렌더링 후 값 설정
-                updateGapInputs(taskId);
-
-                for (let i = 0; i < task.predecessorIds.length; i++) {
-                    const preId = task.predecessorIds[i];
-                    const gapVal = task.gaps[i];
-                    $(`.task-group[data-id='${taskId}'] .gap[data-pre='${preId}']`).val(gapVal);
-                }
+                updateGapInputs(id, gapsMap);
             }
         }, 0);
-
     }
 
-    function updateGapInputs(currentId) {
-        const container = $(`#gapContainer-${currentId}`);
-        container.empty();
-
-        $(`.task-group[data-id="${currentId}"] .predecessor:checked`).each(function () {
-            const id = $(this).data('id');
-            container.append(`
-                <label>#${id + 1} 이후 gap(일):</label>
-                <input type="number" class="gap" data-pre="${id}" min="0" value="1"><br>
+    /**
+     * @param currentId {number}
+     * @param gapsMap {object}  optional, { predecessorId: gapDays, ... }
+     */
+    function updateGapInputs(currentId, gapsMap = {}) {
+        const cont = $(`#gapContainer-${currentId}`).empty();
+        $(`.task-group[data-id="${currentId}"] .predecessor:checked`).each(function() {
+            const pre = $(this).data('id');
+            const val = gapsMap[pre] != null ? gapsMap[pre] : 1;
+            cont.append(`
+                <label>#${pre+1} 이후 gap(일):</label>
+                <input type="number" class="gap" data-pre="${pre}" min="0" value="${val}"><br>
             `);
         });
+        // gap 변경 시 재계산
+        cont.find('.gap').off('input').on('input', () => validateStartDate(currentId));
+        // 체크박스 변경 직후에도 재계산
+        validateStartDate(currentId);
     }
 
     function validateStartDate(taskId) {
-        const taskEl = $(`.task-group[data-id="${taskId}"]`);
-        const checkedPre = taskEl.find('.predecessor:checked');
-        let maxStart = null;
-
-        checkedPre.each(function () {
-            const preId = $(this).data('id');
-            const preTaskEl = $(`.task-group[data-id="${preId}"]`);
-            const preEnd = new Date(preTaskEl.find('.endDate').val());
-            const gap = parseInt(taskEl.find(`.gap[data-pre="${preId}"]`).val()) || 0;
-
-            let minDate = new Date(preEnd);
-            minDate.setDate(minDate.getDate() + gap);
-
-            if (!maxStart || minDate > maxStart) {
-                maxStart = minDate;
-            }
+        const grp = $(`.task-group[data-id="${taskId}"]`);
+        let maxDate = null;
+        grp.find('.predecessor:checked').each(function() {
+            const pre = $(this).data('id');
+            const end = new Date($(`.task-group[data-id="${pre}"] .endDate`).val());
+            const gap = parseInt(grp.find(`.gap[data-pre="${pre}"]`).val())||0;
+            end.setDate(end.getDate()+gap);
+            if (!maxDate || end > maxDate) maxDate = end;
         });
-
-        if (maxStart) {
-            const startInput = taskEl.find('.startDate')[0];
-            const endInput = taskEl.find('.endDate')[0];
-            const currentDuration = (new Date(endInput.value) - new Date(startInput.value)) / (1000 * 60 * 60 * 24);
-
-            startInput.min = maxStart.toISOString().split("T")[0];
-            if (new Date(startInput.value) < maxStart) {
-                startInput.value = startInput.min;
-                const newEnd = new Date(startInput.value);
-                newEnd.setDate(newEnd.getDate() + (isNaN(currentDuration) ? 1 : currentDuration));
-                endInput.value = newEnd.toISOString().split("T")[0];
+        if (maxDate) {
+            const si = grp.find('.startDate')[0],
+                ei = grp.find('.endDate')[0],
+                dur = (new Date(ei.value)-new Date(si.value))/(1000*60*60*24),
+                minStr = maxDate.toISOString().slice(0,10);
+            si.min = minStr;
+            if (new Date(si.value) < maxDate) {
+                si.value = minStr;
+                const ne = new Date(si.value);
+                ne.setDate(ne.getDate() + (isNaN(dur)?1:dur));
+                ei.value = ne.toISOString().slice(0,10);
             }
         }
     }
 
     function removeTask(id) {
-        $(`.task-group[data-id='${id}']`).remove();
+        $(`.task-group[data-id="${id}"]`).remove();
     }
 
     function submitProject() {
-        const data = {
+        const body = {
             projectName: $('#projectName').val().trim(),
             description: $('#description').val().trim(),
             startDate: $('#startDate').val(),
             endDate: $('#endDate').val(),
             tasks: []
         };
-
-        $('.task-group').each(function () {
-            const id = parseInt($(this).data('id'));
-            const task = {
-                taskName: $(this).find('.taskName').val(),
-                assignedTo: $(this).find('.assignedTo').val(),
-                startDate: $(this).find('.startDate').val(),
-                endDate: $(this).find('.endDate').val(),
-                predecessorIds: [],
-                gaps: []
+        $('.task-group').each(function() {
+            const $g = $(this), id = +$g.data('id');
+            const t = {
+                taskName: $g.find('.taskName').val(),
+                assignedTo: $g.find('.assignedTo').val(),
+                startDate: $g.find('.startDate').val(),
+                endDate: $g.find('.endDate').val(),
+                predecessorIds: [], gaps: []
             };
-
-            $(this).find('.predecessor:checked').each(function () {
-                const preId = parseInt($(this).data('id'));
-                const gap = parseInt($(this).closest('.task-group').find(`.gap[data-pre="${preId}"]`).val()) || 0;
-                task.predecessorIds.push(preId);
-                task.gaps.push(gap);
+            $g.find('.predecessor:checked').each(function() {
+                const pre = +$(this).data('id');
+                t.predecessorIds.push(pre);
+                t.gaps.push(+$g.find(`.gap[data-pre="${pre}"]`).val()||0);
             });
-
-            data.tasks.push(task);
-
-            const meta = tasksMeta.find(t => t.id === id);
-            if (meta) meta.name = task.taskName;
+            body.tasks.push(t);
         });
-
-        if (!data.projectName || !data.startDate || !data.endDate) {
-            alert("프로젝트명, 시작일, 종료일을 모두 입력해주세요.");
-            return;
+        if (!body.projectName||!body.startDate||!body.endDate) {
+            return alert("프로젝트명/시작일/종료일을 모두 입력해주세요.");
         }
-
-        const method = projectId ? 'PUT' : 'POST';
-        const url = projectId ? `/api/projects/${projectId}` : '/api/projects';
-
         $.ajax({
-            type: method,
-            url: url,
-            data: JSON.stringify(data),
-            contentType: 'application/json',
-            success: function () {
-                alert('✅ 프로젝트가 저장되었습니다.');
-                window.location.href = 'index.html';
-            },
-            error: function () {
-                alert('❌ 저장 중 오류 발생');
-            }
+            url: projectId?`/api/projects/${projectId}`:'/api/projects',
+            type: projectId?'PUT':'POST',
+            contentType:'application/json',
+            data:JSON.stringify(body),
+            success: ()=>{ alert('✅ 저장되었습니다'); location.href='index.html'; },
+            error: ()=> alert('❌ 저장 중 오류 발생')
         });
     }
 
     function goBack() {
-        window.location.href = 'index.html';
+        location.href='index.html';
     }
 </script>
 </body>
 </html>
+

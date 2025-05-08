@@ -36,6 +36,68 @@ public class ProjectService {
         return projectRepository.findByProjectNameContaining(projectName);
     }
 
+    private List<Task> saveTasksWithDependencies(Project project, List<TaskRequestDto> taskDtos) {
+        List<Task> savedTasks = new ArrayList<>();
+
+        // 1. Task 먼저 저장
+        List<Task> tasks = new ArrayList<>();
+        for (TaskRequestDto dto : taskDtos) {
+            Task task = new Task();
+            task.setTaskName(dto.getTaskName());
+            task.setAssignedTo(dto.getAssignedTo());
+            task.setProject(project);
+
+            LocalDate baseStartDate = dto.getStartDate();
+            LocalDate resolvedStartDate = baseStartDate;
+
+            // gap 기반 시작일 조정
+            if (dto.getPredecessorIds() != null && dto.getGaps() != null &&
+                    dto.getPredecessorIds().size() == dto.getGaps().size()) {
+
+                for (int j = 0; j < dto.getPredecessorIds().size(); j++) {
+                    Long preIndex = dto.getPredecessorIds().get(j);
+                    int gap = dto.getGaps().get(j);
+                    if (preIndex < savedTasks.size()) {
+                        LocalDate candidateStart = savedTasks.get(preIndex.intValue()).getEndDate().plusDays(gap);
+                        if (candidateStart.isAfter(resolvedStartDate)) {
+                            resolvedStartDate = candidateStart;
+                        }
+                    }
+                }
+            }
+
+            long duration = ChronoUnit.DAYS.between(baseStartDate, dto.getEndDate());
+            task.setStartDate(resolvedStartDate);
+            task.setEndDate(resolvedStartDate.plusDays(duration));
+
+            tasks.add(task);
+        }
+
+        savedTasks = taskRepository.saveAll(tasks);
+
+        // 2. 의존성 저장
+        for (int i = 0; i < taskDtos.size(); i++) {
+            TaskRequestDto dto = taskDtos.get(i);
+            Task target = savedTasks.get(i);
+
+            if (dto.getPredecessorIds() != null && dto.getGaps() != null) {
+                for (int j = 0; j < dto.getPredecessorIds().size(); j++) {
+                    Long preIdx = dto.getPredecessorIds().get(j);
+                    int gap = dto.getGaps().get(j);
+                    TaskDependency dep = new TaskDependency();
+                    dep.setTask(target);
+                    dep.setPredecessor(savedTasks.get(preIdx.intValue()));
+                    dep.setGapDays(gap);
+                    taskDependencyRepository.save(dep);
+                }
+            }
+        }
+
+        return savedTasks;
+    }
+
+
+
     @Transactional
     public Project saveProject(ProjectRequestDto requestDto) {
         Project project = new Project();
@@ -43,44 +105,15 @@ public class ProjectService {
         project.setStartDate(requestDto.getStartDate());
         project.setEndDate(requestDto.getEndDate());
         project.setDescription(requestDto.getDescription());
-
         Project savedProject = projectRepository.save(project);
 
-        List<Task> savedTasks = new ArrayList<>();
-        if (requestDto.getTasks() != null && !requestDto.getTasks().isEmpty()) {
-            List<Task> tasks = new ArrayList<>();
-
-            for (TaskRequestDto taskDto : requestDto.getTasks()) {
-                Task task = new Task();
-                task.setTaskName(taskDto.getTaskName());
-                task.setStartDate(taskDto.getStartDate());
-                task.setEndDate(taskDto.getEndDate());
-                task.setAssignedTo(taskDto.getAssignedTo());
-                task.setProject(savedProject);
-                tasks.add(task);
-            }
-
-            savedTasks = taskRepository.saveAll(tasks);
-
-            // TaskDependency 저장
-            for (int i = 0; i < requestDto.getTasks().size(); i++) {
-                TaskRequestDto dto = requestDto.getTasks().get(i);
-                Task target = savedTasks.get(i);
-                if (dto.getPredecessorIds() != null && dto.getGaps() != null) {
-                    for (int j = 0; j < dto.getPredecessorIds().size(); j++) {
-                        Long preIdx = dto.getPredecessorIds().get(j);
-                        int gap = dto.getGaps().get(j);
-                        TaskDependency dep = new TaskDependency();
-                        dep.setTask(target);
-                        dep.setPredecessor(savedTasks.get(preIdx.intValue()));
-                        dep.setGapDays(gap);
-                        taskDependencyRepository.save(dep);
-                    }
-                }
-            }
+        if (requestDto.getTasks() != null) {
+            saveTasksWithDependencies(savedProject, requestDto.getTasks());
         }
+
         return savedProject;
     }
+
 
     public Project getProjectById(Long id) {
         return projectRepository.findById(id)
@@ -110,53 +143,15 @@ public class ProjectService {
         project.setEndDate(requestDto.getEndDate());
         project.setDescription(requestDto.getDescription());
 
-        // 기존 Task 및 의존성 삭제
         List<Task> oldTasks = taskRepository.findByProjectId(id);
-        for (Task task : oldTasks) {
-            taskDependencyRepository.deleteAll(task.getDependencies());
-        }
+        oldTasks.forEach(task -> taskDependencyRepository.deleteAll(task.getDependencies()));
         taskRepository.deleteAll(oldTasks);
 
-        List<Task> savedTasks = new ArrayList<>();
-
-        if (requestDto.getTasks() != null && !requestDto.getTasks().isEmpty()) {
-            List<Task> tasks = new ArrayList<>();
-
-            for (TaskRequestDto taskDto : requestDto.getTasks()) {
-                Task task = new Task();
-                task.setTaskName(taskDto.getTaskName());
-                task.setAssignedTo(taskDto.getAssignedTo());
-                task.setProject(project);
-
-                LocalDate baseStartDate = taskDto.getStartDate();
-                LocalDate resolvedStartDate = baseStartDate;
-
-                long duration = ChronoUnit.DAYS.between(baseStartDate, taskDto.getEndDate());
-
-                task.setStartDate(resolvedStartDate);
-                task.setEndDate(resolvedStartDate.plusDays(duration));
-
-                tasks.add(task);
-            }
-
-            savedTasks = taskRepository.saveAll(tasks);
-
-            for (int i = 0; i < requestDto.getTasks().size(); i++) {
-                TaskRequestDto dto = requestDto.getTasks().get(i);
-                Task target = savedTasks.get(i);
-                if (dto.getPredecessorIds() != null && dto.getGaps() != null) {
-                    for (int j = 0; j < dto.getPredecessorIds().size(); j++) {
-                        Long preIdx = dto.getPredecessorIds().get(j);
-                        int gap = dto.getGaps().get(j);
-                        TaskDependency dep = new TaskDependency();
-                        dep.setTask(target);
-                        dep.setPredecessor(savedTasks.get(preIdx.intValue()));
-                        dep.setGapDays(gap);
-                        taskDependencyRepository.save(dep);
-                    }
-                }
-            }
+        if (requestDto.getTasks() != null) {
+            saveTasksWithDependencies(project, requestDto.getTasks());
         }
+
         return project;
     }
+
 }
