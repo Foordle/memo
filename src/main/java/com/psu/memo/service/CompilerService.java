@@ -52,8 +52,10 @@ public class CompilerService {
             return response;
         }
         finally{
-            //process.waitFor();
-            //process.destroy();
+            if (process != null) {
+                process.waitFor();
+                process.destroy();
+            }
             Files.deleteIfExists(filePath);
         }
     }
