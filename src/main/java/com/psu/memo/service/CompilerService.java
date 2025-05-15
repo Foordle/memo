@@ -2,8 +2,10 @@ package com.psu.memo.service;
 
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,17 +26,33 @@ public class CompilerService {
         Process process = null;
 
         try{
-            //String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc gcc /source.c -o /output && cat /output";
-            process = runtime.exec("notepad.exe");
+            String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc gcc /source.c -o /output && cat /output";
+            process = runtime.exec(dockerCommand);
 
+            // 명령어 실행 결과 읽기
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+
+            // 에러 스트림 읽기 (컴파일 에러 처리)
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder errorOutput = new StringBuilder();
+            while ((line = errorReader.readLine()) != null) {
+                errorOutput.append(line).append("\n");
+            }
+
+            // 결과 반환
             Map<String, String> response = new HashMap<>();
-            response.put("output", "success");
+            response.put("output", errorOutput.length() > 0 ? errorOutput.toString() : output.toString());
 
             return response;
         }
         finally{
-            process.waitFor();
-            process.destroy();
+            //process.waitFor();
+            //process.destroy();
             Files.deleteIfExists(filePath);
         }
     }
