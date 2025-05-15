@@ -27,7 +27,8 @@ public class CompilerService {
 
         try{
             String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc gcc /source.c -o /output && cat /output";
-            process = runtime.exec(dockerCommand);
+            String[] cmd = {"/bin/sh", "-c", dockerCommand};
+            process = runtime.exec(cmd);
 
             // 명령어 실행 결과 읽기
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
