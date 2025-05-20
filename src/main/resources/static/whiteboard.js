@@ -152,8 +152,15 @@ function drawFromMessage(msg) {
         case 'arrow':
             drawArrow(p.x1,p.y1,p.x2,p.y2);
             break;
+        case 'text':
+            // 🖋 텍스트 그리기
+            // 원하는 폰트, 크기로 조절하세요
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = '#000';
+            ctx.fillText(p.text, p.x, p.y);
+            break;
         case 'select':
-            // 선택툴은 free-hand 로 처리했으면 이쪽
+            // free-hand 도 여기로 처리할 수도 있고…
             break;
     }
     ctx.closePath();
