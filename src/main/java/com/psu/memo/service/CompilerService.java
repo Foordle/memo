@@ -22,6 +22,8 @@ public class CompilerService {
         }
 
         Path filePath = createFile(code, lang);
+        Process testProcess = Runtime.getRuntime().exec("echo hello world");
+        testProcess.destroy();
 
         try{
             String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"/source.c -o /output && /output\"";
@@ -48,7 +50,7 @@ public class CompilerService {
             Map<String, String> response = new HashMap<>();
             response.put("output", !errorOutput.isEmpty() ? errorOutput.toString() : output.toString());
 
-            System.out.println(line);
+            //System.out.println(line);
             process.destroy();
             return response;
         } finally {
