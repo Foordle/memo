@@ -49,15 +49,21 @@ public class CompilerService {
             Map<String, String> response = new HashMap<>();
             response.put("output", errorOutput.length() > 0 ? errorOutput.toString() : output.toString());
 
+            process.waitFor();
+
             return response;
+        }catch (IOException e) {
+            e.printStackTrace();
+            // 적절한 에러 처리
         }
         finally{
-            if (process != null) {
-                process.waitFor();
+            if(process != null){
                 process.destroy();
             }
             Files.deleteIfExists(filePath);
         }
+
+        return null;
     }
 
     private Path createFile(String code, String lang) throws IOException{
