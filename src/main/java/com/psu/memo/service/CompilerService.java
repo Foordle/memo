@@ -22,6 +22,7 @@ public class CompilerService {
         }
 
         Path filePath = createFile(code, lang);
+
         Runtime runtime = Runtime.getRuntime();
         Process process = null;
 
@@ -52,22 +53,16 @@ public class CompilerService {
             process.waitFor();
 
             return response;
-        }catch (IOException e) {
-            e.printStackTrace();
-            // 적절한 에러 처리
-        }
-        finally{
-            if(process != null){
-                process.destroy();
-            }
+        }catch(IOException | InterruptedException e) {
+            throw e;
+        }finally {
+            if (process != null) process.destroy();
             Files.deleteIfExists(filePath);
         }
-
-        return null;
     }
 
     private Path createFile(String code, String lang) throws IOException{
-        Path dirPath = Paths.get(tempdir);
+        Path dirPath = Paths.get(tempdir).toAbsolutePath();
 
         if (!Files.exists(dirPath)) {
             Files.createDirectories(dirPath); // 디렉토리가 없으면 생성
