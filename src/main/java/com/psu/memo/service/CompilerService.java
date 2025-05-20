@@ -25,8 +25,8 @@ public class CompilerService {
 
         try{
             String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"/source.c -o /output && /output\"";
-            //String[] cmd = {"/bin/sh", "-c", dockerCommand};
-            Process process = Runtime.getRuntime().exec(dockerCommand);
+            String[] cmd = {"/bin/sh", "-c", dockerCommand};
+            Process process = Runtime.getRuntime().exec(cmd);
 
             String line;
 
@@ -46,13 +46,11 @@ public class CompilerService {
 
             // 결과 반환
             Map<String, String> response = new HashMap<>();
-            response.put("output", errorOutput.length() > 0 ? errorOutput.toString() : output.toString());
+            response.put("output", !errorOutput.isEmpty() ? errorOutput.toString() : output.toString());
 
             process.destroy();
             return response;
-        }catch(IOException e) {
-            throw e;
-        }finally {
+        } finally {
             Files.deleteIfExists(filePath);
         }
     }
