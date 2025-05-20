@@ -48,6 +48,7 @@ public class CompilerService {
             Map<String, String> response = new HashMap<>();
             response.put("output", !errorOutput.isEmpty() ? errorOutput.toString() : output.toString());
 
+            System.out.println(line);
             process.destroy();
             return response;
         } finally {
