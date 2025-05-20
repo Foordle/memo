@@ -44,15 +44,21 @@ window.addEventListener('load', () => {
 
     // WebSocket 연결
     const sock = new SockJS('/ws-whiteboard');
-    stompClient = Stomp.over(sock);
+    stompClient  = Stomp.over(sock);
     stompClient.connect({}, () => {
         console.log('WebSocket Connected');
+
+        // 1) 실시간 구독
         stompClient.subscribe('/topic/draw', msg => {
             const wb = JSON.parse(msg.body);
             console.log('<<< MESSAGE', wb);
             drawFromMessage(wb);
         });
+
+        // 2) 이력 한 번 요청 (init)
+        stompClient.send('/app/init', {}, JSON.stringify({}));
     });
+
 });
 
 // pointerdown
@@ -66,12 +72,13 @@ function onPointerDown(e) {
     if (currentTool === 'select') {
         ctx.beginPath();
         ctx.moveTo(startX, startY);
+        sendMessage('drawStart', { x:startX, y:startY });
     }
 }
 
 // pointermove
 function onPointerMove(e) {
-    if (!drawing) return;
+    if (!drawing || currentTool!=='select') return;
     const r = canvas.getBoundingClientRect();
     const x = e.clientX - r.left, y = e.clientY - r.top;
 
@@ -80,7 +87,7 @@ function onPointerMove(e) {
         ctx.lineTo(x, y);
         ctx.stroke();
         // (원하면 전송)
-        // sendMessage('draw', { x, y });
+        sendMessage('draw', { x, y });
     }
 }
 
@@ -141,30 +148,47 @@ function drawFromMessage(msg) {
     const p = msg.payload;
     ctx.beginPath();
     switch (msg.type) {
+        case 'drawStart':
+            ctx.beginPath();
+            ctx.moveTo(p.x,p.y);
+            break;
+
+        case 'draw':
+            ctx.lineTo(p.x,p.y);
+            ctx.stroke();
+            break;
+
         case 'rect':
             ctx.strokeRect(p.x1, p.y1, p.x2-p.x1, p.y2-p.y1);
             break;
-        case 'circle':
+
+        case 'circle': {
             const rx = (p.x2-p.x1)/2, ry = (p.y2-p.y1)/2;
             ctx.ellipse(p.x1+rx, p.y1+ry, Math.abs(rx), Math.abs(ry), 0, 0, 2*Math.PI);
             ctx.stroke();
             break;
+        }
+
         case 'arrow':
             drawArrow(p.x1,p.y1,p.x2,p.y2);
             break;
+
         case 'text':
             // 🖋 텍스트 그리기
-            // 원하는 폰트, 크기로 조절하세요
             ctx.font = '16px sans-serif';
             ctx.fillStyle = '#000';
+            // payload 에서는 p.text, p.x, p.y 로 전달
             ctx.fillText(p.text, p.x, p.y);
             break;
+
+        // (선택툴 자체를 replay 하고 싶으면 여기에 넣어도 됩니다)
         case 'select':
-            // free-hand 도 여기로 처리할 수도 있고…
             break;
     }
     ctx.closePath();
 }
+
+
 
 // 화살표 그리기
 function drawArrow(x1,y1,x2,y2) {
