@@ -20,7 +20,7 @@ public class CompilerService {
             throw new IllegalArgumentException("Code and language are required.");
         }
 
-        Path filePath = createFile(code, lang);
+        Path filePath = createFile(code, lang).toAbsolutePath();
 
         /*
         Process testProcess = Runtime.getRuntime().exec("echo hello world");
@@ -73,7 +73,7 @@ public class CompilerService {
 
     private Path createFile(String code, String lang) throws IOException{
         String tempdir = "./TempFiles";
-        Path dirPath = Paths.get(tempdir).toAbsolutePath();
+        Path dirPath = Paths.get(tempdir);
 
         if (!Files.exists(dirPath)) {
             Files.createDirectories(dirPath); // 디렉토리가 없으면 생성
