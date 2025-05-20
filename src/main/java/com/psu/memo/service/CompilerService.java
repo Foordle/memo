@@ -25,8 +25,8 @@ public class CompilerService {
 
         try{
             String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"/source.c -o /output && /output\"";
-            String[] cmd = {"/bin/sh", "-c", dockerCommand};
-            Process process = Runtime.getRuntime().exec(cmd);
+            //String[] cmd = {"/bin/sh", "-c", dockerCommand};
+            Process process = Runtime.getRuntime().exec(dockerCommand);
 
             String line;
 
