@@ -1,0 +1,30 @@
+<!-- src/main/resources/static/whiteboard.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>협업 화이트보드 다이어그램</title>
+    <!-- SockJS, stomp.js, whiteboard.js 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <!-- 이 경로가 실제 정적 리소스 경로와 일치해야 합니다! -->
+    <script src="/whiteboard.js"></script>
+    <style>
+        #board { border:1px solid #333; touch-action: none; }
+        button.active { background: #ddd; }
+    </style>
+</head>
+<body>
+<h2>🤝 협업 화이트보드 다이어그램</h2>
+<!-- 툴바 -->
+<div id="toolbar">
+    <button id="selectBtn">선택</button>
+    <button id="rectBtn">사각형</button>
+    <button id="circleBtn">원</button>
+    <button id="arrowBtn">화살표</button>
+    <button id="textBtn">텍스트</button>
+</div>
+<!-- 캔버스 -->
+<canvas id="board" width="900" height="600"></canvas>
+</body>
+</html>
