@@ -23,13 +23,10 @@ public class CompilerService {
 
         Path filePath = createFile(code, lang);
 
-        Runtime runtime = Runtime.getRuntime();
-        Process process = null;
-
         try{
             String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc gcc /source.c -o /output && cat /output";
             String[] cmd = {"/bin/sh", "-c", dockerCommand};
-            process = runtime.exec(cmd);
+            Process process = Runtime.getRuntime().exec(cmd);
 
             // 명령어 실행 결과 읽기
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -50,13 +47,11 @@ public class CompilerService {
             Map<String, String> response = new HashMap<>();
             response.put("output", errorOutput.length() > 0 ? errorOutput.toString() : output.toString());
 
-            process.waitFor();
-
+            process.destroy();
             return response;
-        }catch(IOException | InterruptedException e) {
+        }catch(IOException e) {
             throw e;
         }finally {
-            if (process != null) process.destroy();
             Files.deleteIfExists(filePath);
         }
     }
