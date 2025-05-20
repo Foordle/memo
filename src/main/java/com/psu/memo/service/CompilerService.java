@@ -24,14 +24,15 @@ public class CompilerService {
         Path filePath = createFile(code, lang);
 
         try{
-            String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc gcc /source.c -o /output && cat /output";
+            String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"/source.c -o /output && /output\"";
             String[] cmd = {"/bin/sh", "-c", dockerCommand};
             Process process = Runtime.getRuntime().exec(cmd);
+
+            String line;
 
             // 명령어 실행 결과 읽기
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder output = new StringBuilder();
-            String line;
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
