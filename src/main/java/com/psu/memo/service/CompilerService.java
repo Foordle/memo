@@ -14,7 +14,6 @@ import java.util.Map;
 
 @Service
 public class CompilerService {
-    private final String tempdir = "./TempFiles";
 
     public Map<String, String> compileCode(String code, String lang) throws IOException, InterruptedException {
         if (code == null || code.isEmpty() || lang == null || lang.isEmpty()) {
@@ -23,7 +22,7 @@ public class CompilerService {
 
         Path filePath = createFile(code, lang);
 
-        //test
+        /*
         Process testProcess = Runtime.getRuntime().exec("echo hello world");
 
         String testLine;
@@ -37,9 +36,10 @@ public class CompilerService {
         testProcess.destroy();
 
         //test
+        */
 
         try{
-            String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"/source.c -o /output && /output\"";
+            String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"gcc /source.c -o /output && /output\"";
             String[] cmd = {"/bin/sh", "-c", dockerCommand};
             Process process = Runtime.getRuntime().exec(cmd);
 
@@ -72,6 +72,7 @@ public class CompilerService {
     }
 
     private Path createFile(String code, String lang) throws IOException{
+        String tempdir = "./TempFiles";
         Path dirPath = Paths.get(tempdir).toAbsolutePath();
 
         if (!Files.exists(dirPath)) {
