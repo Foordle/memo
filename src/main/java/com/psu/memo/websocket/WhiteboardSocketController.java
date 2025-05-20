@@ -35,7 +35,7 @@ public class WhiteboardSocketController {
      */
     @MessageMapping("/init")
     public void init(WhiteboardMessage unused) {
-        // init 페이로드는 사용하지 않으므로 unused로 받기만 합니다.
+        // init 페이로드는 사용하지 않으므로 unused로 받기만....
         history.forEach(msg -> template.convertAndSend("/topic/draw", msg));
     }
 }
