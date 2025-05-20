@@ -22,8 +22,21 @@ public class CompilerService {
         }
 
         Path filePath = createFile(code, lang);
+
+        //test
         Process testProcess = Runtime.getRuntime().exec("echo hello world");
+
+        String testLine;
+        BufferedReader testReader = new BufferedReader(new InputStreamReader(testProcess.getInputStream()));
+        StringBuilder testOutput = new StringBuilder();
+        while ((testLine = testReader.readLine()) != null) {
+            testOutput.append(testLine).append("\n");
+        }
+
+        System.out.println(testLine);
         testProcess.destroy();
+
+        //test
 
         try{
             String dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"/source.c -o /output && /output\"";
