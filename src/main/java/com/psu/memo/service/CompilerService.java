@@ -22,24 +22,29 @@ public class CompilerService {
 
         Path filePath = createFile(code, lang).toAbsolutePath();
 
-        /*
-        Process testProcess = Runtime.getRuntime().exec("echo hello world");
-
-        String testLine;
-        BufferedReader testReader = new BufferedReader(new InputStreamReader(testProcess.getInputStream()));
-        StringBuilder testOutput = new StringBuilder();
-        while ((testLine = testReader.readLine()) != null) {
-            testOutput.append(testLine).append("\n");
+        String dockerCommand;
+        switch (lang.toLowerCase()) {
+            case "c":
+                // C: gcc로 컴파일 후 실행
+                dockerCommand = "docker run --rm -v " + filePath + ":/source.c gcc sh -c \"gcc /source.c -o /output && /output\"";
+                break;
+            case "cpp":
+                // C++: g++로 컴파일 후 실행
+                dockerCommand = "docker run --rm -v " + filePath + ":/source.cpp gcc sh -c \"g++ /source.cpp -o /output && /output\"";
+                break;
+            case "java":
+                // Java: javac로 컴파일 후 실행 (Main 클래스 기준)
+                dockerCommand = "docker run --rm -v " + filePath + ":/Main.java openjdk sh -c \"javac /Main.java && java -cp / Main\"";
+                break;
+            case "python":
+                // Python: 바로 실행
+                dockerCommand = "docker run --rm -v " + filePath + ":/source.py python python3 /source.py";
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported language: " + lang);
         }
 
-        System.out.println(testLine);
-        testProcess.destroy();
-
-        //test
-        */
-
         try{
-            String dockerCommand = "docker run --rm -v " + filePath.toString() + ":/source.c gcc sh -c \"gcc /source.c -o /output && /output\"";
             String[] cmd = {"/bin/sh", "-c", dockerCommand};
             Process process = Runtime.getRuntime().exec(cmd);
 
@@ -63,7 +68,6 @@ public class CompilerService {
             Map<String, String> response = new HashMap<>();
             response.put("output", !errorOutput.isEmpty() ? errorOutput.toString() : output.toString());
 
-            //System.out.println(line);
             process.destroy();
             return response;
         } finally {
@@ -79,7 +83,25 @@ public class CompilerService {
             Files.createDirectories(dirPath); // 디렉토리가 없으면 생성
         }
 
-        Path filePath = dirPath.resolve("source.c");
+        String extension;
+        switch (lang.toLowerCase()) {
+            case "c":
+                extension = ".c";
+                break;
+            case "cpp":
+                extension = ".cpp";
+                break;
+            case "java":
+                extension = ".java";
+                break;
+            case "python":
+                extension = ".py";
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported language: " + lang);
+        }
+
+        Path filePath = dirPath.resolve("source" + extension);
         Files.write(filePath, code.getBytes(StandardCharsets.UTF_8));
 
         return filePath;
