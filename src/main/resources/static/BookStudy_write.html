@@ -1,0 +1,65 @@
+<!-- BookStudy_write.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>책 공부 게시글 작성하기</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+    <h2>📚 책 공부 게시글 작성하기</h2>
+
+    <label for="pageNumber">페이지 번호:</label>
+    <input type="number" id="pageNumber" class="field"><br>
+
+    <label for="image">이미지 파일:</label>
+    <input type="file" id="image" class="field"><br>
+
+    <label for="contents">공부 내용:</label>
+    <textarea id="contents" class="field"></textarea><br>
+
+    <button onclick="submitPost()">저장하기</button>
+    <button onclick="goBack()">취소</button>
+</div>
+
+<script>
+    function submitPost() {
+        const pageNumber = $('#pageNumber').val().trim();
+        const contents = $('#contents').val().trim();
+        const image = $('#image')[0].files[0];
+
+        if (!pageNumber || !contents || !image) {
+            alert('모든 항목을 입력해주세요.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('pageNumber', pageNumber);
+        formData.append('contents', contents);
+        formData.append('image', image);
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/bookstudy',  // ✅ API 경로 확인
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function () {
+                alert('책 공부 게시글이 저장되었습니다.');
+                window.location.href = 'index.html';
+            },
+            error: function (xhr) {
+                console.error("🚨 오류:", xhr.responseText);
+                alert('책 공부 게시글 저장 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
+    function goBack() {
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
+</html>

@@ -4,40 +4,83 @@
     <meta charset="UTF-8">
     <title>게시글 및 프로젝트 목록</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <script type="module" src="index.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
+<body>
 <div class="background-header"></div>
 <div class="background-body"></div>
-
-<div class = "wrap" id = "auth-div" style = "display:none;">
-<form action="/login" method="post">
-    <div class="form-group">
-        <label for="username">아이디:</label>
-        <input type="text" id="username" name="username" required>
-    </div>
-
-    <div class="form-group">
-        <label for="password">비밀번호:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-
-    <button type="submit" id="loginBtn">로그인</button>
-</form>
+<div class="container">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <div class="col-md-3 mb-2 mb-md-0"><a href="/" class="d-inline-flex link-body-emphasis text-decoration-none">
+            <svg class="bi" width="40" height="32" role="img" aria-label="Bootstrap">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+        </a></div>
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a href="#" class="nav-link px-2 link-secondary">Home</a></li>
+            <li><a href="cardList.html" class="nav-link px-2">게시글</a></li>
+            <li><a href="projectList.html" class="nav-link px-2">프로젝트</a></li>
+            <li><a href="bookstudyList.html" class="nav-link px-2">책공부</a></li>
+            <li><a href="#" class="nav-link px-2">About</a></li>
+        </ul>
+        <div class="col-md-3 text-end">
+            <button type="button" class="btn btn-outline-primary me-2">Login</button>
+            <button type="button" class="btn btn-primary">Sign-up</button>
+        </div>
+    </header>
 </div>
 
-<div class = "wrap">
-    <a href="/register.html" id = "registerBtn" style="display: none;">회원가입</a>
-    <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
+
+<div class="wrap" id="auth-div" style="display:none;">
+
+    <form action="/login" method="post">
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <div class="form-floating">
+            <input type="text" class="form-control" id="username" placeholder="Your id" name="username" required>
+            <label for="username">Your id</label>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="password" placeholder="Password" name="password" required>
+            <label for="password">Password</label>
+        </div>
+        <div class="form-check text-start my-3">
+            <input class="form-check-input" type="checkbox" value="remember-me" id="checkDefault">
+            <label class="form-check-label" for="checkDefault">
+                Remember me
+            </label>
+        </div>
+        <button class="btn btn-primary w-100 py-2" id="loginBtn" type="submit">Login</button>
+        <a href="/register.html" id="registerBtn" style="display: none;">Sign up</a>
+        <a href="/logout" id="logoutBtn" style="display: none;">Logout</a>
+
+
+<!--
+        <div class="form-group">
+            <label for="username">아이디:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">비밀번호:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit" id="loginBtn">로그인</button>
+        -->
+    </form>
 </div>
 
-
-
+<!--
 <div class="wrap">
     <div class="header">
         <h2>게시글 및 프로젝트 관리</h2>
         <p>공유하고 싶은 소식과 프로젝트를 입력해주세요.</p>
     </div>
+    <a href="cardList.html">📘게시글 목록 보기</a>
 
     <button id="writeBtn" style="display: none;">게시글 작성하기</button>
 
@@ -45,121 +88,12 @@
 
     <button id="project_writeBtn" style="display: none;">프로젝트 일정 추가하기</button>
 
-    <button id="compilerBtn" style="display: none;">컴파일러</button>
-
     <h3>📌 게시글 목록</h3>
     <div id="cards-box"></div>
 
     <h3>📌 프로젝트 일정 목록</h3>
     <div id="projects-box"></div>
 </div>
-
-<script>
-    // URL 파라미터 확인 후 로그인 성공 시 알림창 표시
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') {
-        alert('로그인 성공!');
-    }
-
-    if (urlParams.get('error') === 'true') {
-        alert('로그인 실패');
-    }
-
-
-    $(document).ready(function () {
-        // 세션 확인 AJAX 요청
-        $.ajax({
-            type: 'GET',
-            url: '/check-login',
-            success: function (isLoggedIn) {
-                if (isLoggedIn) {
-                    // 로그인 상태: 글 작성/프로젝트 추가 버튼 활성화
-                    $('#writeBtn').show();
-                    $('#project_writeBtn').show();
-                    $('#logoutBtn').show();
-                    $('#compilerBtn').show();
-                    //$('#auth-div').hide();
-                    //$('#registerBtn').hide();
-                } else {
-                    // 비로그인 상태: 로그인 버튼 활성화
-                    $('#auth-div').show();
-                    $('#registerBtn').show();
-                }
-            }
-        });
-
-
-        $('#writeBtn').click(function () {
-            window.location.href = 'write.html';
-        });
-
-        $('#project_writeBtn').click(function () {
-            window.location.href = 'project_write.html';
-        });
-
-        $('#compilerBtn').click(function () {
-            window.location.href = 'compiler.html';
-        });
-
-        getMessages();
-        getProjects();
-    });
-
-
-    $(document).ready(function () {
-        $('#fileBtn').click(function () {
-            window.location.href = 'file.html';
-        })
-
-    });
-
-
-
-    // 기존 게시글 목록 가져오기
-    function getMessages() {
-        $('#cards-box').empty();
-        $.ajax({
-            type: 'GET',
-            url: '/api/memos',
-            success: function (response) {
-                response.forEach(memo => {
-                    $('#cards-box').append(`
-                        <div class="card" onclick="window.location.href='detail.html?id=${memo.id}'">
-                            <h3>${memo.title}</h3>
-                        </div>
-                    `);
-                });
-            }
-        });
-    }
-
-    // 프로젝트 일정 목록 가져오기
-    function getProjects() {
-        $('#projects-box').empty();
-        $.ajax({
-            type: 'GET',
-            url: '/api/projects',
-            success: function (response) {
-                if (response.length === 0) {
-                    $('#projects-box').append('<p>등록된 프로젝트 일정이 없습니다.</p>');
-                    return;
-                }
-
-                response.forEach(project => {
-                    $('#projects-box').append(`
-                        <div class="card" onclick="window.location.href='project_detail.html?id=${project.id}'">
-                            <h3>${project.projectName} - ${project.taskName}</h3>
-                            <p><strong>시작:</strong> ${project.startDate} ~ <strong>종료:</strong> ${project.endDate}</p>
-                            <p><strong>담당자:</strong> ${project.assignedTo}</p>
-                        </div>
-                    `);
-                });
-            },
-            error: function () {
-                $('#projects-box').append('<p>프로젝트 데이터를 불러오는 중 오류가 발생했습니다.</p>');
-            }
-        });
-    }
-</script>
+-->
 </body>
 </html>
