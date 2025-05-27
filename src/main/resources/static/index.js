@@ -82,10 +82,10 @@
         getProjects();
     });
 
-        $(document).ready(function () {
-        $('#compilerBtn').click(function () {
-            window.location.href = 'compiler.html';
-        })
+        //$(document).ready(function () {
+        //$('#compilerBtn').click(function () {
+        //    window.location.href = 'compiler.html';
+        //})
 
         $(document).ready(function () {
         $('#fileBtn').click(function () {
