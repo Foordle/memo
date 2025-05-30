@@ -4,7 +4,6 @@
 });
 
     // 책 공부 게시글 목록 가져오기
-    // 책 공부 게시글 목록 가져오기
     function getBookStudyPosts() {
     $('#bookstudy-box').empty();
     $.ajax({
@@ -54,6 +53,7 @@
                     $('#project_writeBtn').show();
                     $('#logoutBtn').show();
                     $('#bookStudy_writeBtn').show();
+                    $('#compilerBtn').show();
                     //$('#auth-div').hide();
                     //$('#registerBtn').hide();
                 } else {
@@ -77,10 +77,15 @@
         window.location.href = 'BookStudy_write.html';
     });
 
+
         getMessages();
         getProjects();
     });
 
+        //$(document).ready(function () {
+        //$('#compilerBtn').click(function () {
+        //    window.location.href = 'compiler.html';
+        //})
 
         $(document).ready(function () {
         $('#fileBtn').click(function () {
