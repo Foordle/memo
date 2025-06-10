@@ -5,6 +5,8 @@ function BookStudyPosts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const BACKEND_URL = "http://localhost:8080";
+
   useEffect(() => {
     // 데이터 불러오기
     fetch('/api/bookstudy')
@@ -35,10 +37,11 @@ function BookStudyPosts() {
           className="card"
           key={post.id}
           style={{ cursor: 'pointer', marginBottom: '1rem' }}
-          onClick={() => window.location.href = `BookStudy_detail.html?id=${post.id}`}
+          onClick={() => window.location.href = `BookStudyDetail?id=${post.id}`}
         >
           <h3>페이지 번호: {post.pageNumber}</h3>
           <p>{post.contents.length > 100 ? post.contents.substring(0, 100) + '...' : post.contents}</p>
+          <img src={`${BACKEND_URL}${post.imagePath}`} alt="책 공부 이미지" style={{ maxWidth: '200px' }} />
         </div>
       ))}
     </div>
