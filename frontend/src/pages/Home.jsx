@@ -1,32 +1,72 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
+import styled from 'styled-components'
+
+const WrapDiv = styled.div`
+  width: 500px;
+`
+const StDiv = styled.main`
+    padding-top: 100px;
+    display: flex;
+    flex-direction: column;
+`
 
 const Home = () => {
+
+
   return (
     <>
-      <header className="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-      <div className="col-md-3 mb-2 mb-md-0">
-        <a href="/" className="d-inline-flex link-body-emphasis text-decoration-none">
-          {/* SVG 아이콘은 실제 프로젝트에 맞게 교체 필요 */}
-          <svg className="bi" width="40" height="32" role="img" aria-label="Bootstrap">
-            <use xlinkHref="#bootstrap"></use>
-          </svg>
-        </a>
-      </div>
-      <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-        <li><Link to="/" className="nav-link px-2 link-secondary">Home</Link></li>
-        <li><Link to="/Book" className="nav-link px-2">게시글</Link></li>
-        <li><a href="projectList.html" className="nav-link px-2">프로젝트</a></li>
-        <li><a href="bookstudyList.html" className="nav-link px-2">책공부</a></li>
-        <li><a href="compiler.html" className="nav-link px-2">컴파일러</a></li>
-        <li><a href="#" className="nav-link px-2">About</a></li>
-      </ul>
-      <div className="col-md-3 text-end">
-        <button type="button" className="btn btn-outline-primary me-2">Login</button>
-        <button type="button" className="btn btn-primary">Sign-up</button>
-      </div>
-    </header>
-  </>
+        <StDiv>
+        <WrapDiv className="wrap" id="auth-div">
+          <form action="/login" method="post">
+            <h1 className="h3 mb-3 fw-normal">Please sign in</h1>
+            <div className="form-floating">
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                placeholder="Your id"
+                name="username"
+                required=""
+              />
+              <label htmlFor="username">Your id</label>
+            </div>
+            <div className="form-floating">
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                placeholder="Password"
+                name="password"
+                required=""
+              />
+              <label htmlFor="password">Password</label>
+            </div>
+            <div className="form-check text-start my-3">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                defaultValue="remember-me"
+                id="checkDefault"
+              />
+              <label className="form-check-label" htmlFor="checkDefault">
+                Remember me
+              </label>
+            </div>
+            <button className="btn btn-primary w-100 py-2" id="loginBtn" type="submit">
+              Login
+            </button>
+            <a href="/register.html" id="registerBtn" style={{ display: "none" }}>
+              Sign up
+            </a>
+            <a href="/logout" id="logoutBtn" style={{ display: "none" }}>
+              Logout
+            </a>
+          </form>
+        </WrapDiv>
+        </StDiv>
+
+    </>
   )
 }
 

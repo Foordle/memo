@@ -1,143 +1,143 @@
 
-    $(document).ready(function () {
+$(document).ready(function () {
     getBookStudyPosts();
 });
 
-    // 책 공부 게시글 목록 가져오기
-    function getBookStudyPosts() {
+// 책 공부 게시글 목록 가져오기
+function getBookStudyPosts() {
     $('#bookstudy-box').empty();
     $.ajax({
-    type: 'GET',
-    url: '/api/bookstudy',  // 새로운 책 공부 게시글 API 경로
-    success: function (response) {
-    if (response.length === 0) {
-    $('#bookstudy-box').append('<p>등록된 책 공부 게시글이 없습니다.</p>');
-    return;
-}
+        type: 'GET',
+        url: '/api/bookstudy',  // 새로운 책 공부 게시글 API 경로
+        success: function (response) {
+            if (response.length === 0) {
+                $('#bookstudy-box').append('<p>등록된 책 공부 게시글이 없습니다.</p>');
+                return;
+            }
 
-    response.forEach(post => {
-    $('#bookstudy-box').append(`
+            response.forEach(post => {
+                $('#bookstudy-box').append(`
                 <div class="card" onclick="window.location.href='BookStudy_detail.html?id=${post.id}'">
                     <h3>페이지 번호: ${post.pageNumber}</h3>
                     <p>${post.contents.substring(0, 100)}...</p>
                 </div>
             `);
-});
-},
-    error: function () {
-    $('#bookstudy-box').append('<p>책 공부 게시글 데이터를 불러오는 중 오류가 발생했습니다.</p>');
+            });
+        },
+        error: function () {
+            $('#bookstudy-box').append('<p>책 공부 게시글 데이터를 불러오는 중 오류가 발생했습니다.</p>');
+        }
+    });
 }
-});
+
+// URL 파라미터 확인 후 로그인 성공 시 알림창 표시
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success') === 'true') {
+    alert('로그인 성공!');
 }
 
-        // URL 파라미터 확인 후 로그인 성공 시 알림창 표시
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('success') === 'true') {
-        alert('로그인 성공!');
-    }
-
-        if (urlParams.get('error') === 'true') {
-        alert('로그인 실패');
-    }
+if (urlParams.get('error') === 'true') {
+    alert('로그인 실패');
+}
 
 
-        $(document).ready(function () {
-        // 세션 확인 AJAX 요청
-        $.ajax({
-            type: 'GET',
-            url: '/check-login',
-            success: function (isLoggedIn) {
-                if (isLoggedIn) {
-                    // 로그인 상태: 글 작성/프로젝트 추가 버튼 활성화
-                    $('#writeBtn').show();
-                    $('#project_writeBtn').show();
-                    $('#logoutBtn').show();
-                    $('#bookStudy_writeBtn').show();
-                    $('#compilerBtn').show();
-                    //$('#auth-div').hide();
-                    //$('#registerBtn').hide();
-                } else {
-                    // 비로그인 상태: 로그인 버튼 활성화
-                    $('#auth-div').show();
-                    $('#registerBtn').show();
-                }
+$(document).ready(function () {
+    // 세션 확인 AJAX 요청
+    $.ajax({
+        type: 'GET',
+        url: '/check-login',
+        success: function (isLoggedIn) {
+            if (isLoggedIn) {
+                // 로그인 상태: 글 작성/프로젝트 추가 버튼 활성화
+                $('#writeBtn').show();
+                $('#project_writeBtn').show();
+                $('#logoutBtn').show();
+                $('#bookStudy_writeBtn').show();
+                $('#compilerBtn').show();
+                //$('#auth-div').hide();
+                //$('#registerBtn').hide();
+            } else {
+                // 비로그인 상태: 로그인 버튼 활성화
+                $('#auth-div').show();
+                $('#registerBtn').show();
             }
-        });
+        }
+    });
 
 
-        $('#writeBtn').click(function () {
+    $('#writeBtn').click(function () {
         window.location.href = 'write.html';
     });
 
-        $('#project_writeBtn').click(function () {
+    $('#project_writeBtn').click(function () {
         window.location.href = 'project_write.html';
     });
 
-        $('#bookStudy_writeBtn').click(function () {
+    $('#bookStudy_writeBtn').click(function () {
         window.location.href = 'BookStudy_write.html';
     });
 
 
-        getMessages();
-        getProjects();
-    });
+    getMessages();
+    getProjects();
+});
 
-        //$(document).ready(function () {
-        //$('#compilerBtn').click(function () {
-        //    window.location.href = 'compiler.html';
-        //})
+//$(document).ready(function () {
+//$('#compilerBtn').click(function () {
+//    window.location.href = 'compiler.html';
+//})
 
-        $(document).ready(function () {
-        $('#fileBtn').click(function () {
-            window.location.href = 'file.html';
-        })
+$(document).ready(function () {
+    $('#fileBtn').click(function () {
+        window.location.href = 'file.html';
+    })
 
-    });
+});
 
 
 
-        // 기존 게시글 목록 가져오기
-        function getMessages() {
-        $('#cards-box').empty();
-        $.ajax({
+// 기존 게시글 목록 가져오기
+function getMessages() {
+    $('#cards-box').empty();
+    $.ajax({
         type: 'GET',
         url: '/api/memos',
         success: function (response) {
-        response.forEach(memo => {
-        $('#cards-box').append(`
+            response.forEach(memo => {
+                $('#cards-box').append(`
                         <div class="card" onclick="window.location.href='detail.html?id=${memo.id}'">
                             <h3>${memo.title}</h3>
                         </div>
                     `);
+            });
+        }
     });
-    }
-    });
-    }
+}
 
-        // 프로젝트 일정 목록 가져오기
-        function getProjects() {
-        $('#projects-box').empty();
-        $.ajax({
+// 프로젝트 일정 목록 가져오기
+function getProjects() {
+    $('#projects-box').empty();
+    $.ajax({
         type: 'GET',
         url: '/api/projects',
         success: function (response) {
-        if (response.length === 0) {
-        $('#projects-box').append('<p>등록된 프로젝트 일정이 없습니다.</p>');
-        return;
-    }
+            if (response.length === 0) {
+                $('#projects-box').append('<p>등록된 프로젝트 일정이 없습니다.</p>');
+                return;
+            }
 
-        response.forEach(project => {
-        $('#projects-box').append(`
+            response.forEach(project => {
+                $('#projects-box').append(`
                         <div class="card" onclick="window.location.href='project_detail.html?id=${project.id}'">
                             <h3>${project.projectName} - ${project.taskName}</h3>
                             <p><strong>시작:</strong> ${project.startDate} ~ <strong>종료:</strong> ${project.endDate}</p>
                             <p><strong>담당자:</strong> ${project.assignedTo}</p>
                         </div>
                     `);
-    });
-    },
+            });
+        },
         error: function () {
-        $('#projects-box').append('<p>프로젝트 데이터를 불러오는 중 오류가 발생했습니다.</p>');
-    }
+            $('#projects-box').append('<p>프로젝트 데이터를 불러오는 중 오류가 발생했습니다.</p>');
+        }
     });
-    }
+}

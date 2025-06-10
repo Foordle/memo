@@ -15,9 +15,9 @@ const Header = () => {
       </div>
       <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
         <li><Link to="/" className="nav-link px-2 link-secondary">Home</Link></li>
-        <li><Link to="/Book" className="nav-link px-2">게시글</Link></li>
+        <li><Link to="/BookStudyList" className="nav-link px-2">게시글</Link></li>
         <li><a href="projectList.html" className="nav-link px-2">프로젝트</a></li>
-        <li><a href="bookstudyList.html" className="nav-link px-2">책공부</a></li>
+        <li><Link to="/BookStudyList" className="nav-link px-2">책공부</Link></li>
         <li><a href="compiler.html" className="nav-link px-2">컴파일러</a></li>
         <li><a href="#" className="nav-link px-2">About</a></li>
       </ul>
@@ -26,6 +26,7 @@ const Header = () => {
         <button type="button" className="btn btn-primary">Sign-up</button>
       </div>
     </header>
+    
   </>
   )
 }

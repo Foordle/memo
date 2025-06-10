@@ -7,10 +7,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': {
+      '/api':'http://localhost:8080',
+      '/login': {
+        target: 'http://localhost:8080', // 스프링부트 서버 주소
+        changeOrigin: true,
+      },
+      '/register': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

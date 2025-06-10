@@ -1,8 +1,10 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "../pages/Home";
-import Book from "../pages/book";
+import BookStudyList from "../pages/BookStudyList";
 import Layout from "../components/Layout";
+import BookStudyDetail from "../pages/BookStudyDetail.jsx";
+import BookStudyWrite from "../pages/BookStudyWrite.jsx";
 
 
 const Router = () => {
@@ -11,7 +13,10 @@ const Router = () => {
       <Routes>
         <Route path="/" element = {<Layout/>}>
             <Route index element={<Home/>}/>
-            <Route path="/book" element={<Book/>}/>
+            <Route path="/BookStudyList" element={<BookStudyList/>}/>
+            <Route path="/BookStudyDetail" element={<BookStudyDetail/>}/>
+            <Route path="/BookStudyWrite" element={<BookStudyWrite/>}/>
+
         </Route>
       </Routes>
     </BrowserRouter>
