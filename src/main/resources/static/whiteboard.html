@@ -12,6 +12,90 @@
     <style>
         #board { border:1px solid #333; touch-action: none; }
         button.active { background: #ddd; }
+        body {
+            background: #f7f8fa;
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', Arial, sans-serif;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2d6cdf;
+            margin-top: 36px;
+            margin-bottom: 28px;
+            font-size: 2rem;
+            letter-spacing: -1px;
+        }
+
+        #toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 14px 0;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(80,100,120,0.07);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #toolbar button {
+            background: #edf2fa;
+            color: #2d6cdf;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 22px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+            box-shadow: 0 1px 4px rgba(80,100,120,0.05);
+        }
+
+        #toolbar button.active,
+        #toolbar button:focus {
+            background: #2d6cdf;
+            color: #fff;
+            outline: none;
+        }
+
+        #toolbar button:hover:not(.active) {
+            background: #e4eaf3;
+            color: #1956b7;
+        }
+
+        #board {
+            display: block;
+            margin: 0 auto 32px auto;
+            border: 2.5px solid #2d6cdf;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 2px 16px rgba(80,100,120,0.10);
+            touch-action: none;
+            transition: box-shadow 0.18s;
+            max-width: 95vw;
+        }
+
+        @media (max-width: 1000px) {
+            #board {
+                width: 98vw !important;
+                height: 60vw !important;
+                min-height: 260px;
+                min-width: 180px;
+            }
+            #toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px 0;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
     </style>
 </head>
 <body>
